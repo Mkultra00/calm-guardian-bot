@@ -271,9 +271,11 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
       start,
       stop,
       sendThreat,
+      runDemo,
+      isRunningDemo,
       error,
     }),
-    [status, activities, threat, transcript, conversation.status, conversation.isSpeaking, isConnecting, start, stop, sendThreat, error],
+    [status, activities, threat, transcript, conversation.status, conversation.isSpeaking, isConnecting, start, stop, sendThreat, runDemo, isRunningDemo, error],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
