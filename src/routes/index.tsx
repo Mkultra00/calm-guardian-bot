@@ -41,6 +41,10 @@ function Index() {
             <SessionControl />
           </header>
 
+          <div className="flex items-center justify-center">
+            <RunDemoButton />
+          </div>
+
           <ShieldStatus />
 
           <div className="grid gap-4 lg:grid-cols-3">
