@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CipherProvider } from "@/hooks/use-cipher";
+import { CipherProvider, useCipher } from "@/hooks/use-cipher";
 import { ShieldStatus } from "@/components/cipher/ShieldStatus";
 import { Transcript } from "@/components/cipher/Transcript";
 import { ToolActivityLog } from "@/components/cipher/ToolActivityLog";
 import { ThreatCard } from "@/components/cipher/ThreatCard";
 import { DemoTriggers } from "@/components/cipher/DemoTriggers";
 import { SessionControl } from "@/components/cipher/SessionControl";
+import { Play, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
