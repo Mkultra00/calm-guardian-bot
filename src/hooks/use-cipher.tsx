@@ -39,6 +39,8 @@ interface CipherCtx {
   start: () => Promise<void>;
   stop: () => Promise<void>;
   sendThreat: (text: string) => Promise<void>;
+  runDemo: () => void;
+  isRunningDemo: boolean;
   error: string | null;
 }
 
