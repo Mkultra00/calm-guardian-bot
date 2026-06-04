@@ -60,8 +60,10 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
   const [threat, setThreat] = useState<ThreatCard | null>(null);
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isRunningDemo, setIsRunningDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const counter = useRef(0);
+  const demoTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const nextId = () => `${Date.now()}-${++counter.current}`;
 
   const fetchToken = useServerFn(getElevenLabsToken);
