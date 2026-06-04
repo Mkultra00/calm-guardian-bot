@@ -1,4 +1,4 @@
-import { useConversation } from "@elevenlabs/react";
+import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getElevenLabsToken } from "@/lib/elevenlabs-token.functions";
@@ -45,6 +45,14 @@ interface CipherCtx {
 const Ctx = createContext<CipherCtx | null>(null);
 
 export function CipherProvider({ children }: { children: ReactNode }) {
+  return (
+    <ConversationProvider>
+      <InnerCipherProvider>{children}</InnerCipherProvider>
+    </ConversationProvider>
+  );
+}
+
+function InnerCipherProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<ShieldStatus>("protected");
   const [activities, setActivities] = useState<ToolActivity[]>([]);
   const [threat, setThreat] = useState<ThreatCard | null>(null);
