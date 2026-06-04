@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CipherProvider } from "@/hooks/use-cipher";
+import { CipherProvider, useCipher } from "@/hooks/use-cipher";
 import { ShieldStatus } from "@/components/cipher/ShieldStatus";
 import { Transcript } from "@/components/cipher/Transcript";
 import { ToolActivityLog } from "@/components/cipher/ToolActivityLog";
 import { ThreatCard } from "@/components/cipher/ThreatCard";
 import { DemoTriggers } from "@/components/cipher/DemoTriggers";
 import { SessionControl } from "@/components/cipher/SessionControl";
+import { Play, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,6 +41,10 @@ function Index() {
             <SessionControl />
           </header>
 
+          <div className="flex items-center justify-center">
+            <RunDemoButton />
+          </div>
+
           <ShieldStatus />
 
           <div className="grid gap-4 lg:grid-cols-3">
@@ -66,5 +71,23 @@ function Index() {
         </div>
       </div>
     </CipherProvider>
+  );
+}
+
+function RunDemoButton() {
+  const { runDemo, isRunningDemo } = useCipher();
+  return (
+    <button
+      onClick={runDemo}
+      disabled={isRunningDemo}
+      className="mono inline-flex items-center gap-2 rounded-md border border-accent/50 bg-accent/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-accent hover:bg-accent/20 disabled:opacity-50"
+    >
+      {isRunningDemo ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Play className="h-3.5 w-3.5" />
+      )}
+      {isRunningDemo ? "Running Demo..." : "Run Demo"}
+    </button>
   );
 }
