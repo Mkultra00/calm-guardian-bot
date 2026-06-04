@@ -80,11 +80,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "CIPHER Guardian — Voice-First Family Scam Shield" },
       { name: "description", content: "CIPHER is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
       { name: "author", content: "Black Chamber / Seraph Systems" },
-      { property: "og:title", content: "CIPHER Guardian" },
-      { property: "og:description", content: "Voice-first family scam shield." },
+      { property: "og:title", content: "CIPHER Guardian — Voice-First Family Scam Shield" },
+      { property: "og:description", content: "CIPHER is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "CIPHER Guardian — Voice-First Family Scam Shield" },
+      { name: "twitter:description", content: "CIPHER is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/53cac86a-6e79-46ff-aa0d-e4f48fabf833/id-preview-f83fefff--0b9bfea5-abba-487c-af60-80050dae97e1.lovable.app-1780535307853.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/53cac86a-6e79-46ff-aa0d-e4f48fabf833/id-preview-f83fefff--0b9bfea5-abba-487c-af60-80050dae97e1.lovable.app-1780535307853.png" },
     ],
     links: [
       {
