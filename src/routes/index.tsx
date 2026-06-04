@@ -69,3 +69,21 @@ function Index() {
     </CipherProvider>
   );
 }
+
+function RunDemoButton() {
+  const { runDemo, isRunningDemo } = useCipher();
+  return (
+    <button
+      onClick={runDemo}
+      disabled={isRunningDemo}
+      className="mono inline-flex items-center gap-2 rounded-md border border-accent/50 bg-accent/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-accent hover:bg-accent/20 disabled:opacity-50"
+    >
+      {isRunningDemo ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Play className="h-3.5 w-3.5" />
+      )}
+      {isRunningDemo ? "Running Demo..." : "Run Demo"}
+    </button>
+  );
+}
