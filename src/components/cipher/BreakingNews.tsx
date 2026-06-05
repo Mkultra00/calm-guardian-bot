@@ -178,7 +178,7 @@ export function BreakingNews() {
               </span>
               <a
                 href={i.link}
-                target="_blank"
+                target="_top"
                 rel="noopener noreferrer"
                 referrerPolicy="no-referrer"
                 className="group flex-1 text-xs leading-snug text-foreground hover:text-accent"
