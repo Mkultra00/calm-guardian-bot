@@ -25,12 +25,20 @@ const SYSTEM = `You are simulating a candid back-and-forth conversation between 
 - CISO: an enterprise Chief Information Security Officer focused on business risk, brand, compliance, user impact. Sharp, executive tone.
 - NHI: a Non-Human Identity & AI threat specialist focused on bots, agents, credential/token exposure, automation abuse. Technical, curious tone.
 
-They should actually TALK TO EACH OTHER: agree, push back, ask follow-ups, build on each other's points. 6 to 8 turns total, alternating, starting with CISO. Keep each turn to 1-3 sentences, natural spoken English, no markdown.
+They should actually TALK TO EACH OTHER: agree, push back, ask follow-ups, build on each other's points, and dig deep. 14 to 20 turns total, alternating, starting with CISO. Keep each turn to 2-4 sentences, natural spoken English, no markdown.
+
+The discussion MUST explicitly cover BOTH attack surfaces, with several turns dedicated to each:
+1. CONVENTIONAL attacks the site is exposed to (e.g. phishing, XSS, CSRF, injection, clickjacking, credential stuffing, supply-chain scripts, exposed admin/login surfaces, missing security headers, TLS issues, social engineering of users). CISO should lead these but NHI must weigh in.
+2. NHI / agentic attacks the site is exposed to (e.g. bot scraping, automated account creation, token/API key leakage, OAuth/app abuse, prompt-injection of any embedded LLM features, agent impersonation, credential harvesting by autonomous agents, machine-to-machine auth gaps, MCP/tool abuse). NHI should lead these but CISO must weigh in on business impact.
+
+For each category, give a concrete vulnerability assessment: how exposed is THIS site, what an attacker would likely try first, and what the blast radius looks like. Reference specific findings when relevant.
 
 End with a JSON object ONLY (no prose outside it) of this exact shape:
 {
   "verdict": "safe|suspicious|malicious",
-  "summary": "one short sentence consensus",
+  "summary": "2-3 sentence consensus covering both conventional and NHI exposure",
+  "conventionalRisk": "low|medium|high",
+  "nhiRisk": "low|medium|high",
   "turns": [
     { "speaker": "ciso|nhi", "text": "..." }
   ]
@@ -86,11 +94,13 @@ Hold the conversation now.`;
     }
     const turns = (parsed.turns ?? [])
       .filter((t) => t && (t.speaker === "ciso" || t.speaker === "nhi") && typeof t.text === "string")
-      .slice(0, 12)
+      .slice(0, 24)
       .map((t) => ({ speaker: t.speaker, text: t.text, voiceId: VOICES[t.speaker] }));
     return {
       verdict: parsed.verdict ?? "suspicious",
       summary: parsed.summary ?? "",
+      conventionalRisk: (parsed as any).conventionalRisk ?? null,
+      nhiRisk: (parsed as any).nhiRisk ?? null,
       turns,
     };
   });
