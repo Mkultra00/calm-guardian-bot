@@ -9,6 +9,7 @@ import { DemoTriggers } from "@/components/cipher/DemoTriggers";
 import { UploadAnalyzer } from "@/components/cipher/UploadAnalyzer";
 import { CisoScenarios } from "@/components/cipher/CisoScenarios";
 import { NhiThreats } from "@/components/cipher/NhiThreats";
+import { BreakingNews } from "@/components/cipher/BreakingNews";
 import { Play, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -58,6 +59,8 @@ function Index() {
           </div>
 
           <ShieldStatus />
+
+          <BreakingNews />
 
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="lg:col-span-2 lg:h-[460px]">
