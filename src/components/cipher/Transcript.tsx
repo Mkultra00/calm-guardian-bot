@@ -1,13 +1,51 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCipher } from "@/hooks/use-cipher";
-import { Download } from "lucide-react";
+import { Download, Volume2, VolumeX } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { synthesizeSpeech } from "@/lib/tts.functions";
 
 export function Transcript() {
   const { transcript } = useCipher();
   const ref = useRef<HTMLDivElement>(null);
+  const [voiceOn, setVoiceOn] = useState(false);
+  const spokenIds = useRef<Set<string>>(new Set());
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const tts = useServerFn(synthesizeSpeech);
+
   useEffect(() => {
     ref.current?.scrollTo({ top: ref.current.scrollHeight, behavior: "smooth" });
   }, [transcript]);
+
+  useEffect(() => {
+    if (!voiceOn) return;
+    const latest = transcript[transcript.length - 1];
+    if (!latest || latest.role === "user") return;
+    if (spokenIds.current.has(latest.id)) return;
+    spokenIds.current.add(latest.id);
+    (async () => {
+      try {
+        const { audio } = await tts({ data: { text: latest.text } });
+        if (!voiceOn) return;
+        const el = new Audio(`data:audio/mpeg;base64,${audio}`);
+        audioRef.current?.pause();
+        audioRef.current = el;
+        await el.play();
+      } catch (e) {
+        console.error("TTS error", e);
+      }
+    })();
+  }, [transcript, voiceOn, tts]);
+
+  useEffect(() => {
+    if (!voiceOn) {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    } else {
+      // mark existing messages as already spoken so we only read new ones
+      transcript.forEach((m) => spokenIds.current.add(m.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceOn]);
 
   const downloadTranscript = () => {
     const lines = transcript.map((m) => {
@@ -33,6 +71,19 @@ export function Transcript() {
         <div className="mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           Live Transcript
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          onClick={() => setVoiceOn((v) => !v)}
+          className={`mono inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${
+            voiceOn
+              ? "border-primary bg-primary/20 text-primary"
+              : "border-border bg-secondary/50 text-foreground hover:bg-secondary"
+          }`}
+          title="Read new Djinn messages aloud (ElevenLabs)"
+          aria-pressed={voiceOn}
+        >
+          {voiceOn ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />} Voice {voiceOn ? "On" : "Off"}
+        </button>
         <button
           onClick={downloadTranscript}
           disabled={transcript.length === 0}
@@ -41,6 +92,7 @@ export function Transcript() {
         >
           <Download className="h-3 w-3" /> Download
         </button>
+        </div>
       </div>
       <div ref={ref} className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
         {transcript.length === 0 && (
