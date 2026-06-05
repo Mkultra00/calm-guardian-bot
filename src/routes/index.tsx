@@ -86,9 +86,9 @@ function Index() {
 
           <UploadAnalyzer />
 
-          <ScamSearch />
-
           <SiteAudit />
+
+          <ScamSearch />
 
           <CisoScenarios />
 
