@@ -19,6 +19,11 @@ function normalizeLink(link: string) {
   return `https://news.google.com/${link.replace(/^\.\//, "")}`;
 }
 
+function extractSourceUrl(block: string) {
+  const raw = /<source[^>]*url="([^"]+)"/.exec(block)?.[1];
+  return raw ? normalizeLink(decodeEntities(raw)) : null;
+}
+
 function decodeEntities(s: string) {
   return s
     .replace(/<!\[CDATA\[(.*?)\]\]>/gs, "$1")
@@ -39,7 +44,8 @@ function parseRss(xml: string): NewsItem[] {
   while ((m = itemRegex.exec(xml))) {
     const block = m[1];
     const title = decodeEntities(/<title>([\s\S]*?)<\/title>/.exec(block)?.[1] ?? "");
-    const link = normalizeLink(decodeEntities(/<link>([\s\S]*?)<\/link>/.exec(block)?.[1] ?? ""));
+    const googleLink = normalizeLink(decodeEntities(/<link>([\s\S]*?)<\/link>/.exec(block)?.[1] ?? ""));
+    const link = extractSourceUrl(block) ?? googleLink;
     const pub = /<pubDate>([\s\S]*?)<\/pubDate>/.exec(block)?.[1] ?? "";
     const sourceMatch = /<source[^>]*>([\s\S]*?)<\/source>/.exec(block);
     const source = decodeEntities(sourceMatch?.[1] ?? "");
