@@ -29,6 +29,8 @@ export function SiteAudit() {
   type Discussion = {
     verdict: "safe" | "suspicious" | "malicious";
     summary: string;
+    conventionalRisk?: "low" | "medium" | "high" | null;
+    nhiRisk?: "low" | "medium" | "high" | null;
     turns: DiscussionTurn[];
   };
   const [discussion, setDiscussion] = useState<Discussion | null>(null);
@@ -415,6 +417,20 @@ export function SiteAudit() {
                   </div>
                   {discussion.summary && (
                     <p className="mt-2 text-xs italic text-muted-foreground">{discussion.summary}</p>
+                  )}
+                  {(discussion.conventionalRisk || discussion.nhiRisk) && (
+                    <div className="mono mt-2 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest">
+                      {discussion.conventionalRisk && (
+                        <span className="rounded border border-border bg-background/60 px-2 py-0.5 text-muted-foreground">
+                          Conventional: <span className="text-foreground">{discussion.conventionalRisk}</span>
+                        </span>
+                      )}
+                      {discussion.nhiRisk && (
+                        <span className="rounded border border-border bg-background/60 px-2 py-0.5 text-muted-foreground">
+                          NHI: <span className="text-foreground">{discussion.nhiRisk}</span>
+                        </span>
+                      )}
+                    </div>
                   )}
                   <div className="mt-3 space-y-2">
                     {discussion.turns.map((t, i) => {
