@@ -183,8 +183,7 @@ export function BreakingNews() {
                 referrerPolicy="no-referrer"
                 onClick={(e) => {
                   e.preventDefault();
-                  const w = window.open(i.link, "_blank", "noopener,noreferrer");
-                  if (!w) window.top!.location.href = i.link;
+                  window.open(i.link, "_blank", "noopener,noreferrer");
                 }}
                 className="group flex-1 text-xs leading-snug text-foreground hover:text-accent"
               >
