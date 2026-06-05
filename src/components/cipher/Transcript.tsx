@@ -24,7 +24,7 @@ export function Transcript() {
         {transcript.map((m) => (
           <div key={m.id} className="space-y-1">
             <div className="mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              {m.role === "user" ? "▶ You" : "◆ CIPHER"}
+              {m.role === "user" ? "▶ You" : "◆ Djinn"}
             </div>
             <div
               className={`whitespace-pre-wrap rounded-md px-3 py-2 ${
