@@ -15,7 +15,7 @@ export function SessionControl() {
         </button>
       ) : (
         <button
-          onClick={start}
+          onClick={() => start("guardian")}
           disabled={isConnecting}
           className="mono inline-flex items-center gap-2 rounded-md border border-primary/50 bg-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/20 disabled:opacity-50"
         >
