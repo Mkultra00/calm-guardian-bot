@@ -168,6 +168,9 @@ export function SiteAudit() {
         reason: result.finalUrl ?? result.url,
         result: `✓ ${res.turns.length} turns`,
       });
+      if (res.turns.length > 0) {
+        playConversation(res);
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Discussion failed";
       setDiscussion({ verdict: "suspicious", summary: msg, turns: [] });
@@ -176,15 +179,16 @@ export function SiteAudit() {
     }
   };
 
-  const playConversation = async () => {
-    if (!discussion || playingConv) return;
+  const playConversation = async (overrideDiscussion?: Discussion) => {
+    const disc = overrideDiscussion ?? discussion;
+    if (!disc || playingConv) return;
     stopRequestedRef.current = false;
     setPlayingConv(true);
     try {
-      for (let i = 0; i < discussion.turns.length; i++) {
+      for (let i = 0; i < disc.turns.length; i++) {
         if (stopRequestedRef.current) break;
         setPlayingIdx(i);
-        const t = discussion.turns[i];
+        const t = disc.turns[i];
         const res = await runTts({ data: { text: t.text, voiceId: t.voiceId } });
         if (stopRequestedRef.current) break;
         const audio = new Audio(`data:audio/mpeg;base64,${res.audio}`);
@@ -475,7 +479,7 @@ export function SiteAudit() {
                     </div>
                     {discussion.turns.length > 0 && (
                       <button
-                        onClick={playingConv ? stopConversation : playConversation}
+                        onClick={() => (playingConv ? stopConversation() : playConversation())}
                         className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
                       >
                         {playingConv ? <Square className="h-3 w-3 animate-pulse" /> : <Play className="h-3 w-3" />}
