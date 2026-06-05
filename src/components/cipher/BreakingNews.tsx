@@ -97,24 +97,38 @@ export function BreakingNews() {
             <Loader2 className="h-3 w-3 animate-spin text-accent" />
           )}
         </div>
-        <button
-          onClick={() => setStreaming((s) => !s)}
-          className={`mono inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${
-            streaming
-              ? "border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20"
-              : "border-accent bg-accent/10 text-accent hover:bg-accent/20"
-          }`}
-        >
-          {streaming ? (
-            <>
-              <Square className="h-3 w-3" /> Stop Stream
-            </>
-          ) : (
-            <>
-              <Radio className="h-3 w-3" /> Stream Breaking News
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setVoiceOn((v) => !v)}
+            className={`mono inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${
+              voiceOn
+                ? "border-primary bg-primary/20 text-primary"
+                : "border-border bg-secondary/50 text-foreground hover:bg-secondary"
+            }`}
+            title="Read new headlines aloud (ElevenLabs)"
+            aria-pressed={voiceOn}
+          >
+            {voiceOn ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />} Voice {voiceOn ? "On" : "Off"}
+          </button>
+          <button
+            onClick={() => setStreaming((s) => !s)}
+            className={`mono inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${
+              streaming
+                ? "border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20"
+                : "border-accent bg-accent/10 text-accent hover:bg-accent/20"
+            }`}
+          >
+            {streaming ? (
+              <>
+                <Square className="h-3 w-3" /> Stop Stream
+              </>
+            ) : (
+              <>
+                <Radio className="h-3 w-3" /> Stream Breaking News
+              </>
+            )}
+          </button>
+        </div>
       </div>
       <div className="max-h-56 overflow-y-auto p-3">
         {items.length === 0 && !streaming && (
