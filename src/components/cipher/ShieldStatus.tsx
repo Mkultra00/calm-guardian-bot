@@ -48,7 +48,7 @@ export function ShieldStatus() {
       </div>
       <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
         <Shield className="h-3 w-3" />
-        <span>CIPHER</span>
+        <span>Djinn</span>
         <span className={`ml-3 inline-block h-2 w-2 rounded-full ${isConnected ? "bg-primary" : "bg-muted-foreground"}`} />
         <span>{isConnected ? (isSpeaking ? "speaking" : "listening") : "offline"}</span>
       </div>
