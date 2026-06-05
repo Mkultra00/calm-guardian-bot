@@ -27,7 +27,7 @@ function Index() {
     <CipherProvider>
       <div className="min-h-screen bg-background text-foreground">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:p-6">
-          <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <header className="flex flex-col gap-3">
             <div>
               <div className="mono text-[10px] uppercase tracking-[0.3em] text-primary">
                 Black Chamber · Seraph Systems
@@ -40,7 +40,6 @@ function Index() {
                 explains threats — calmly and in plain language.
               </p>
             </div>
-            <SessionControl />
           </header>
 
           <div className="flex items-center justify-center">
@@ -68,6 +67,24 @@ function Index() {
           </div>
 
           <UploadAnalyzer />
+
+          <section className="rounded-lg border border-primary/30 bg-card/60 p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="mono text-[10px] uppercase tracking-[0.3em] text-primary">
+                  Specialist · Chief Information Security Officer
+                </div>
+                <h2 className="mt-1 text-lg font-bold">
+                  CISO <span className="text-primary">Specialist</span>
+                </h2>
+                <p className="mt-1 max-w-xl text-xs text-muted-foreground">
+                  Primary threat-detection and family-scam-shield agent. Start a
+                  voice session to speak with the CISO specialist directly.
+                </p>
+              </div>
+              <SessionControl />
+            </div>
+          </section>
 
           <NhiThreats />
 
