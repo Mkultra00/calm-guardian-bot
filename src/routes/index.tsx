@@ -13,9 +13,9 @@ import { Play, Loader2 } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CIPHER Guardian — Voice-First Family Scam Shield" },
-      { name: "description", content: "CIPHER is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
-      { property: "og:title", content: "CIPHER Guardian" },
+      { title: "Djinn (Deployed Joint Intelligence Neural Network)" },
+      { name: "description", content: "Djinn is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
+      { property: "og:title", content: "Djinn" },
       { property: "og:description", content: "Voice-first family scam shield." },
     ],
   }),
