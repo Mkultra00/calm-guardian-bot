@@ -2,6 +2,7 @@ import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getElevenLabsToken, type AgentKind } from "@/lib/elevenlabs-token.functions";
+import { pickRandomScenario } from "@/lib/demo-scenarios";
 
 export type ShieldStatus = "protected" | "analyzing" | "threat";
 export type Risk = "LOW" | "MEDIUM" | "HIGH";
@@ -177,90 +178,47 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
       demoTimers.current.push(t);
     };
 
+    const scenario = pickRandomScenario();
+
     queue(() => {
       setTranscript((t) => [
         ...t,
-        {
-          id: nextId(),
-          role: "user",
-          text: `[INCOMING EMAIL]\nFrom: support@amaz0n-delivery-help.example\nSubject: Your package is held — $1.99 fee required\nBody: Your parcel is on hold. Pay the $1.99 redelivery fee within 12 hours or it returns to sender. Confirm your card here: hxxps://amaz0n-redeliver.example/pay\n\nPlease analyze this suspicious email and protect me.`,
-          ts: Date.now(),
-        },
+        { id: nextId(), role: "user", text: scenario.userText, ts: Date.now() },
       ]);
     }, 300);
 
-    queue(() => {
-      setStatus("analyzing");
-    }, 900);
+    queue(() => setStatus("analyzing"), 900);
 
     queue(() => {
       setTranscript((t) => [
         ...t,
-        {
-          id: nextId(),
-          role: "agent",
-          text: "I'm analyzing this now. Let me research the sender domain and check for known phishing patterns.",
-          ts: Date.now(),
-        },
+        { id: nextId(), role: "agent", text: scenario.analyzingLine, ts: Date.now() },
       ]);
     }, 1200);
 
-    queue(() => {
-      setActivities((a) => [
-        ...a,
-        {
-          id: nextId(),
-          ts: Date.now(),
-          tool: "tavily_search",
-          reason: "Researching domain amaz0n-delivery-help.example for phishing reports",
-          result: "Domain registered 6 hours ago. 14 abuse reports. No legitimate Amazon affiliation.",
-        },
-      ]);
-    }, 2200);
+    scenario.activities.forEach((act, i) => {
+      queue(() => {
+        setActivities((a) => [
+          ...a,
+          { id: nextId(), ts: Date.now(), tool: act.tool, reason: act.reason, result: act.result },
+        ]);
+      }, 2200 + i * 1200);
+    });
 
-    queue(() => {
-      setActivities((a) => [
-        ...a,
-        {
-          id: nextId(),
-          ts: Date.now(),
-          tool: "deepseek_analysis",
-          reason: "Running structural analysis on email content and URL behavior",
-          result: "Spoofed branding, urgency trigger ('12 hours'), payment demand to unknown domain. Confidence: 97% phishing.",
-        },
-      ]);
-    }, 3400);
+    const threatDelay = 2200 + scenario.activities.length * 1200 + 600;
 
     queue(() => {
       setStatus("threat");
-      setThreat({
-        scam_type: "Phishing Email (Brand Spoof)",
-        risk: "HIGH",
-        do_now: [
-          "Do NOT click the link or enter any card details.",
-          "Delete the email immediately.",
-          "Check your real Amazon account directly via amazon.com — not via email links.",
-          "Report the phishing attempt to reportphishing@apwg.org.",
-        ],
-        sources: [
-          { title: "FTC: How to Recognize and Avoid Phishing Scams", url: "https://consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams" },
-          { title: "CISA: Avoiding Social Engineering and Phishing Attacks", url: "https://www.cisa.gov/news-events/news/avoiding-social-engineering-and-phishing-attacks" },
-        ],
-      });
-    }, 4200);
+      setThreat(scenario.threat);
+    }, threatDelay);
 
     queue(() => {
       setTranscript((t) => [
         ...t,
-        {
-          id: nextId(),
-          role: "agent",
-          text: "THREAT CONFIRMED. This is a high-confidence phishing attack. The domain was registered 6 hours ago and has no legitimate connection to Amazon. The urgency and small fee are classic social engineering triggers. I've locked the shield and listed the exact steps to protect yourself.",
-          ts: Date.now(),
-        },
+        { id: nextId(), role: "agent", text: scenario.closingLine, ts: Date.now() },
       ]);
       setIsRunningDemo(false);
-    }, 4800);
+    }, threatDelay + 600);
   }, []);
 
   const value: CipherCtx = useMemo(
