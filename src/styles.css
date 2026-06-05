@@ -169,3 +169,16 @@
   animation: cipher-scan 3s linear infinite;
   pointer-events: none;
 }
+
+@keyframes eye-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  94%           { transform: scaleY(0.05); }
+  96%           { transform: scaleY(1); }
+  97%           { transform: scaleY(0.05); }
+  99%           { transform: scaleY(1); }
+}
+.eye-blink {
+  animation: eye-blink 5s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
