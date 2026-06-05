@@ -168,6 +168,9 @@ export function SiteAudit() {
         reason: result.finalUrl ?? result.url,
         result: `✓ ${res.turns.length} turns`,
       });
+      if (res.turns.length > 0) {
+        playConversation(res);
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Discussion failed";
       setDiscussion({ verdict: "suspicious", summary: msg, turns: [] });
