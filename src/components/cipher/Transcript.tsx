@@ -48,6 +48,13 @@ export function Transcript() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voiceOn]);
 
+  useEffect(() => {
+    if (isRunningDemo && !wasRunningDemo.current) {
+      setVoiceOn(true);
+    }
+    wasRunningDemo.current = isRunningDemo;
+  }, [isRunningDemo]);
+
   const downloadTranscript = () => {
     const lines = transcript.map((m) => {
       const time = new Date(m.ts).toISOString();
