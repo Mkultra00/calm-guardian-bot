@@ -7,6 +7,7 @@ import { ThreatCard } from "@/components/cipher/ThreatCard";
 import { DemoTriggers } from "@/components/cipher/DemoTriggers";
 import { SessionControl } from "@/components/cipher/SessionControl";
 import { UploadAnalyzer } from "@/components/cipher/UploadAnalyzer";
+import { NhiThreats } from "@/components/cipher/NhiThreats";
 import { Play, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -67,6 +68,8 @@ function Index() {
           </div>
 
           <UploadAnalyzer />
+
+          <NhiThreats />
 
           <footer className="mono pt-2 text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
             Every action visible · CIPHER never obeys the attacker · Keys stay server-side

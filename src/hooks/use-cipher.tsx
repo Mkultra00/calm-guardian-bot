@@ -1,7 +1,7 @@
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getElevenLabsToken } from "@/lib/elevenlabs-token.functions";
+import { getElevenLabsToken, type AgentKind } from "@/lib/elevenlabs-token.functions";
 
 export type ShieldStatus = "protected" | "analyzing" | "threat";
 export type Risk = "LOW" | "MEDIUM" | "HIGH";
@@ -36,7 +36,8 @@ interface CipherCtx {
   isConnected: boolean;
   isConnecting: boolean;
   isSpeaking: boolean;
-  start: () => Promise<void>;
+  activeAgent: AgentKind | null;
+  start: (agent?: AgentKind) => Promise<void>;
   stop: () => Promise<void>;
   sendThreat: (text: string) => Promise<void>;
   runDemo: () => void;
@@ -62,6 +63,7 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isRunningDemo, setIsRunningDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeAgent, setActiveAgent] = useState<AgentKind | null>(null);
   const counter = useRef(0);
   const demoTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const nextId = () => `${Date.now()}-${++counter.current}`;
@@ -130,16 +132,17 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (agent: AgentKind = "guardian") => {
     setIsConnecting(true);
     setError(null);
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      const { token } = await fetchToken();
+      const { token } = await fetchToken({ data: { agent } });
       await conversation.startSession({
         conversationToken: token,
         connectionType: "webrtc",
       });
+      setActiveAgent(agent);
     } catch (e) {
       console.error(e);
       setError(e instanceof Error ? e.message : "Failed to start");
@@ -150,6 +153,7 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
 
   const stop = useCallback(async () => {
     await conversation.endSession();
+    setActiveAgent(null);
   }, [conversation]);
 
   const sendThreat = useCallback(
@@ -268,6 +272,7 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
       isConnected: conversation.status === "connected",
       isConnecting,
       isSpeaking: conversation.isSpeaking,
+      activeAgent,
       start,
       stop,
       sendThreat,
@@ -275,7 +280,7 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
       isRunningDemo,
       error,
     }),
-    [status, activities, threat, transcript, conversation.status, conversation.isSpeaking, isConnecting, start, stop, sendThreat, runDemo, isRunningDemo, error],
+    [status, activities, threat, transcript, conversation.status, conversation.isSpeaking, isConnecting, activeAgent, start, stop, sendThreat, runDemo, isRunningDemo, error],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
