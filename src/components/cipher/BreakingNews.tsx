@@ -71,7 +71,17 @@ export function BreakingNews() {
       cancelled = true;
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [streaming, fetchNews]);
+  }, [streaming, fetchNews, voiceOn, tts]);
+
+  useEffect(() => {
+    if (!voiceOn) {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    } else {
+      items.forEach((i) => spokenIds.current.add(i.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceOn]);
 
   return (
     <div className="rounded-lg border border-accent/40 bg-card/60">
