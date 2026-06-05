@@ -170,14 +170,28 @@
   pointer-events: none;
 }
 
-@keyframes eye-blink {
-  0%, 92%, 100% { clip-path: inset(0 0 0 0); }
-  94%           { clip-path: inset(48% 0 48% 0); }
-  96%           { clip-path: inset(0 0 0 0); }
-  97%           { clip-path: inset(48% 0 48% 0); }
-  99%           { clip-path: inset(0 0 0 0); }
+@keyframes pupil-blink {
+  0%, 92%, 100% { transform: translate(-50%, -50%) scaleY(1); }
+  94%           { transform: translate(-50%, -50%) scaleY(0.08); }
+  96%           { transform: translate(-50%, -50%) scaleY(1); }
+  97%           { transform: translate(-50%, -50%) scaleY(0.08); }
+  99%           { transform: translate(-50%, -50%) scaleY(1); }
 }
 .eye-blink {
-  animation: eye-blink 5s ease-in-out infinite;
-  will-change: clip-path;
+  position: relative;
+  display: inline-block;
+}
+.eye-blink::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22%;
+  height: 22%;
+  border-radius: 9999px;
+  background: #141414;
+  transform: translate(-50%, -50%);
+  animation: pupil-blink 5s ease-in-out infinite;
+  will-change: transform;
+  pointer-events: none;
 }
