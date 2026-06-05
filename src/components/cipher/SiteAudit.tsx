@@ -479,7 +479,7 @@ export function SiteAudit() {
                     </div>
                     {discussion.turns.length > 0 && (
                       <button
-                        onClick={playingConv ? stopConversation : playConversation}
+                        onClick={() => (playingConv ? stopConversation() : playConversation())}
                         className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
                       >
                         {playingConv ? <Square className="h-3 w-3 animate-pulse" /> : <Play className="h-3 w-3" />}
