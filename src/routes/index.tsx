@@ -72,7 +72,7 @@ function Index() {
           <NhiThreats />
 
           <footer className="mono pt-2 text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            Every action visible · CIPHER never obeys the attacker · Keys stay server-side
+            Every action visible · Djinn never obeys the attacker · Keys stay server-side
           </footer>
         </div>
       </div>
