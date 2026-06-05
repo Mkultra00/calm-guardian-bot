@@ -179,7 +179,13 @@ export function BreakingNews() {
               <a
                 href={i.link}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
+                referrerPolicy="no-referrer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const w = window.open(i.link, "_blank", "noopener,noreferrer");
+                  if (!w) window.top!.location.href = i.link;
+                }}
                 className="group flex-1 text-xs leading-snug text-foreground hover:text-accent"
               >
                 {i.title}
