@@ -181,10 +181,6 @@ export function BreakingNews() {
                 target="_blank"
                 rel="noopener noreferrer"
                 referrerPolicy="no-referrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open(i.link, "_blank", "noopener,noreferrer");
-                }}
                 className="group flex-1 text-xs leading-snug text-foreground hover:text-accent"
               >
                 {i.title}
