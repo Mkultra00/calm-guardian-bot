@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Djinn (Deployed Joint Intelligence Neural Network)" },
+      { title: "DJINN — Deployed Joint Intelligence Neural Network" },
       { name: "description", content: "Djinn is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
       { name: "author", content: "Black Chamber / Seraph Systems" },
       { property: "og:title", content: "Djinn (Deployed Joint Intelligence Neural Network)" },

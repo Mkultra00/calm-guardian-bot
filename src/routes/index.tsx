@@ -13,7 +13,7 @@ import { Play, Loader2 } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Djinn (Deployed Joint Intelligence Neural Network)" },
+      { title: "DJINN — Deployed Joint Intelligence Neural Network" },
       { name: "description", content: "Djinn is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
       { property: "og:title", content: "Djinn" },
       { property: "og:description", content: "Voice-first family scam shield." },
@@ -33,8 +33,11 @@ function Index() {
                 Black Chamber · Seraph Systems
               </div>
               <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-                Djinn <span className="text-primary">(Deployed Joint Intelligence Neural Network)</span>
+                DJINN
               </h1>
+              <div className="text-sm font-medium text-primary">
+                Deployed Joint Intelligence Neural Network
+              </div>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
                 Voice-first family scam shield. Djinn listens, researches, and
                 explains threats — calmly and in plain language.
