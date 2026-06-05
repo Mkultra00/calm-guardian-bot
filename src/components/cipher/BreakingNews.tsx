@@ -77,11 +77,33 @@ export function BreakingNews() {
     if (!voiceOn) {
       audioRef.current?.pause();
       audioRef.current = null;
-    } else {
-      items.forEach((i) => spokenIds.current.add(i.id));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voiceOn]);
+
+  const speak = async (text: string) => {
+    // Create audio element synchronously inside the gesture-rooted call
+    // so browsers permit playback after the awaited TTS fetch resolves.
+    const el = new Audio();
+    audioRef.current?.pause();
+    audioRef.current = el;
+    try {
+      const { audio } = await tts({ data: { text } });
+      el.src = `data:audio/mpeg;base64,${audio}`;
+      await el.play();
+    } catch (e) {
+      console.error("News TTS error", e);
+    }
+  };
+
+  const toggleVoice = async () => {
+    const next = !voiceOn;
+    setVoiceOn(next);
+    if (next) {
+      const latest = items[0]?.title ?? "Voice alerts enabled. Listening for breaking cyber, non-human identity, and A.I. threat headlines.";
+      if (items[0]) spokenIds.current.add(items[0].id);
+      await speak(latest);
+    }
+  };
 
   return (
     <div className="rounded-lg border border-accent/40 bg-card/60">
@@ -99,7 +121,7 @@ export function BreakingNews() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setVoiceOn((v) => !v)}
+            onClick={toggleVoice}
             className={`mono inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${
               voiceOn
                 ? "border-primary bg-primary/20 text-primary"
