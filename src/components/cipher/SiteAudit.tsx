@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square } from "lucide-react";
+import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square, Download } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
 import { getSpecialistOpinion } from "@/lib/specialist-opinion.functions";
