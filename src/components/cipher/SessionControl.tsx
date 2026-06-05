@@ -24,7 +24,7 @@ export function SessionControl() {
           ) : (
             <Mic className="h-3.5 w-3.5" />
           )}
-          {isConnecting ? "Connecting" : "CISO Specialist"}
+          {isConnecting ? "Connecting" : "Start CISO Specialist"}
         </button>
       )}
       {error && (
