@@ -133,7 +133,7 @@ export function SiteAudit() {
     <div className="rounded-lg border border-border bg-card/60">
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <Globe className="h-3.5 w-3.5 text-accent" />
-        <div className="mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="mono text-sm font-bold uppercase tracking-[0.2em] text-foreground">
           Site Audit · Firecrawl Scrape
         </div>
       </div>
@@ -154,7 +154,7 @@ export function SiteAudit() {
               onChange={(e) => setUrl(e.target.value)}
               placeholder="example.com or https://suspicious-site.io"
               maxLength={500}
-              className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm font-bold focus:border-primary focus:outline-none"
             />
           </div>
           <button
