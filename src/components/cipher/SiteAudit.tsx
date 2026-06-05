@@ -179,15 +179,16 @@ export function SiteAudit() {
     }
   };
 
-  const playConversation = async () => {
-    if (!discussion || playingConv) return;
+  const playConversation = async (overrideDiscussion?: Discussion) => {
+    const disc = overrideDiscussion ?? discussion;
+    if (!disc || playingConv) return;
     stopRequestedRef.current = false;
     setPlayingConv(true);
     try {
-      for (let i = 0; i < discussion.turns.length; i++) {
+      for (let i = 0; i < disc.turns.length; i++) {
         if (stopRequestedRef.current) break;
         setPlayingIdx(i);
-        const t = discussion.turns[i];
+        const t = disc.turns[i];
         const res = await runTts({ data: { text: t.text, voiceId: t.voiceId } });
         if (stopRequestedRef.current) break;
         const audio = new Audio(`data:audio/mpeg;base64,${res.audio}`);
