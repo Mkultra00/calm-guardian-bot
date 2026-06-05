@@ -31,11 +31,13 @@ function Index() {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:p-6">
           <header className="flex flex-col items-center gap-3">
             <div className="flex flex-col items-center gap-2">
-              <img
-                src={avatar}
-                alt="DJINN Avatar"
-                className="eye-blink h-28 w-28 shrink-0 rounded-full border-2 border-primary/40 object-cover shadow-xl shadow-primary/20 sm:h-36 sm:w-36"
-              />
+              <span className="eye-blink h-28 w-28 shrink-0 sm:h-36 sm:w-36">
+                <img
+                  src={avatar}
+                  alt="DJINN Avatar"
+                  className="h-full w-full rounded-full border-2 border-primary/40 object-cover shadow-xl shadow-primary/20"
+                />
+              </span>
               <div className="text-center">
                 <div className="mono text-[10px] uppercase tracking-[0.3em] text-primary">
                   Black Chamber · Seraph Systems
