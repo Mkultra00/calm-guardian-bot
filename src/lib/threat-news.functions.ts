@@ -12,6 +12,13 @@ const FEEDS = [
   "https://news.google.com/rss/search?q=%22non-human+identity%22+OR+%22NHI+security%22+OR+%22AI+threat%22+OR+%22prompt+injection%22+OR+%22cyber+attack%22+when:1d&hl=en-US&gl=US&ceid=US:en",
 ];
 
+function normalizeLink(link: string) {
+  if (link.startsWith("https://") || link.startsWith("http://")) return link;
+  if (link.startsWith("//")) return `https:${link}`;
+  if (link.startsWith("/")) return `https://news.google.com${link}`;
+  return `https://news.google.com/${link.replace(/^\.\//, "")}`;
+}
+
 function decodeEntities(s: string) {
   return s
     .replace(/<!\[CDATA\[(.*?)\]\]>/gs, "$1")
@@ -32,7 +39,7 @@ function parseRss(xml: string): NewsItem[] {
   while ((m = itemRegex.exec(xml))) {
     const block = m[1];
     const title = decodeEntities(/<title>([\s\S]*?)<\/title>/.exec(block)?.[1] ?? "");
-    const link = decodeEntities(/<link>([\s\S]*?)<\/link>/.exec(block)?.[1] ?? "");
+    const link = normalizeLink(decodeEntities(/<link>([\s\S]*?)<\/link>/.exec(block)?.[1] ?? ""));
     const pub = /<pubDate>([\s\S]*?)<\/pubDate>/.exec(block)?.[1] ?? "";
     const sourceMatch = /<source[^>]*>([\s\S]*?)<\/source>/.exec(block);
     const source = decodeEntities(sourceMatch?.[1] ?? "");
