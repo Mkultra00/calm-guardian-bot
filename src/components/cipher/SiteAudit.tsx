@@ -130,7 +130,7 @@ export function SiteAudit() {
     if (!o || audioLoading) return;
     setAudioLoading(role);
     try {
-      const voiceId = o.voiceId || (role === "ciso" ? "JBFqnCBsd6RMkjVDRZzb" : "TX3LPaxmHKxFdv7VOQHJ");
+      const voiceId = o.voiceId || (role === "ciso" ? "JBFqnCBsd6RMkjVDRZzb" : "Xb7hH8MSUJpSbSDYk0k2");
       const res = await runTts({ data: { text: o.spoken || o.headline, voiceId } });
       const audio = new Audio(`data:audio/mpeg;base64,${res.audio}`);
       await audio.play();
