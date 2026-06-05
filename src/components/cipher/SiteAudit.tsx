@@ -154,7 +154,7 @@ export function SiteAudit() {
               onChange={(e) => setUrl(e.target.value)}
               placeholder="example.com or https://suspicious-site.io"
               maxLength={500}
-              className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm font-bold focus:border-primary focus:outline-none"
             />
           </div>
           <button
