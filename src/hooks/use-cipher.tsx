@@ -77,7 +77,7 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
     },
     onDisconnect: () => {},
     onError: (e) => {
-      console.error("ElevenLabs error", e);
+      console.warn("ElevenLabs error", e);
       setError(typeof e === "string" ? e : "Connection error");
     },
     onMessage: (message: { source?: string; message?: string }) => {
@@ -138,14 +138,17 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      const { token } = await fetchToken({ data: { agent } });
+      const tokenResult = await fetchToken({ data: { agent } });
+      if (!tokenResult.token) {
+        throw new Error(tokenResult.error ?? "Failed to get voice agent token");
+      }
       await conversation.startSession({
-        conversationToken: token,
+        conversationToken: tokenResult.token,
         connectionType: "webrtc",
       });
       setActiveAgent(agent);
     } catch (e) {
-      console.error(e);
+      console.warn(e);
       setError(e instanceof Error ? e.message : "Failed to start");
     } finally {
       setIsConnecting(false);
