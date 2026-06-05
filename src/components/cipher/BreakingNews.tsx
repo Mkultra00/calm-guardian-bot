@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Radio, Square, Loader2, ExternalLink } from "lucide-react";
+import { Radio, Square, Loader2, ExternalLink, Volume2, VolumeX } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchThreatNews, type NewsItem } from "@/lib/threat-news.functions";
+import { synthesizeSpeech } from "@/lib/tts.functions";
 
 const POLL_MS = 30_000;
 
@@ -10,9 +11,13 @@ export function BreakingNews() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [voiceOn, setVoiceOn] = useState(false);
   const seen = useRef<Set<string>>(new Set());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchNews = useServerFn(fetchThreatNews);
+  const tts = useServerFn(synthesizeSpeech);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const spokenIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!streaming) {
@@ -31,6 +36,24 @@ export function BreakingNews() {
         incoming.forEach((i) => seen.current.add(i.id));
         if (incoming.length) {
           setItems((prev) => [...incoming, ...prev].slice(0, 50));
+          if (voiceOn && incoming[0]) {
+            const headline = incoming[0].title;
+            if (!spokenIds.current.has(incoming[0].id)) {
+              spokenIds.current.add(incoming[0].id);
+              (async () => {
+                try {
+                  const { audio } = await tts({ data: { text: headline } });
+                  if (!voiceOn) return;
+                  const el = new Audio(`data:audio/mpeg;base64,${audio}`);
+                  audioRef.current?.pause();
+                  audioRef.current = el;
+                  await el.play();
+                } catch (e) {
+                  console.error("News TTS error", e);
+                }
+              })();
+            }
+          }
         }
         setError(null);
       } catch (e) {
@@ -48,7 +71,17 @@ export function BreakingNews() {
       cancelled = true;
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [streaming, fetchNews]);
+  }, [streaming, fetchNews, voiceOn, tts]);
+
+  useEffect(() => {
+    if (!voiceOn) {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    } else {
+      items.forEach((i) => spokenIds.current.add(i.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceOn]);
 
   return (
     <div className="rounded-lg border border-accent/40 bg-card/60">
@@ -64,24 +97,38 @@ export function BreakingNews() {
             <Loader2 className="h-3 w-3 animate-spin text-accent" />
           )}
         </div>
-        <button
-          onClick={() => setStreaming((s) => !s)}
-          className={`mono inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${
-            streaming
-              ? "border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20"
-              : "border-accent bg-accent/10 text-accent hover:bg-accent/20"
-          }`}
-        >
-          {streaming ? (
-            <>
-              <Square className="h-3 w-3" /> Stop Stream
-            </>
-          ) : (
-            <>
-              <Radio className="h-3 w-3" /> Stream Breaking News
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setVoiceOn((v) => !v)}
+            className={`mono inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${
+              voiceOn
+                ? "border-primary bg-primary/20 text-primary"
+                : "border-border bg-secondary/50 text-foreground hover:bg-secondary"
+            }`}
+            title="Read new headlines aloud (ElevenLabs)"
+            aria-pressed={voiceOn}
+          >
+            {voiceOn ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />} Voice {voiceOn ? "On" : "Off"}
+          </button>
+          <button
+            onClick={() => setStreaming((s) => !s)}
+            className={`mono inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${
+              streaming
+                ? "border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20"
+                : "border-accent bg-accent/10 text-accent hover:bg-accent/20"
+            }`}
+          >
+            {streaming ? (
+              <>
+                <Square className="h-3 w-3" /> Stop Stream
+              </>
+            ) : (
+              <>
+                <Radio className="h-3 w-3" /> Stream Breaking News
+              </>
+            )}
+          </button>
+        </div>
       </div>
       <div className="max-h-56 overflow-y-auto p-3">
         {items.length === 0 && !streaming && (
