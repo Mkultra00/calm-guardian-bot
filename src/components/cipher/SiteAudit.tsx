@@ -1,0 +1,167 @@
+import { useState } from "react";
+import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
+import { useCipher } from "@/hooks/use-cipher";
+
+export function SiteAudit() {
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<SiteAuditResult | null>(null);
+  const run = useServerFn(auditSite);
+  const { addActivity, attachSources } = useCipher();
+
+  const submit = async () => {
+    const u = url.trim();
+    if (!u || loading) return;
+    setLoading(true);
+    setResult(null);
+    addActivity({ tool: "firecrawl.scrape", reason: `Auditing ${u}` });
+    try {
+      const res = await run({ data: { url: u } });
+      setResult(res);
+      if (res.error) {
+        addActivity({ tool: "firecrawl.scrape", reason: u, result: `✗ ${res.error}` });
+      } else {
+        const riskCount = res.findings.filter((f) => f.severity === "risk").length;
+        addActivity({
+          tool: "firecrawl.scrape",
+          reason: u,
+          result: riskCount ? `⚠ ${riskCount} risk(s) found` : "Surface scan clean",
+        });
+        if (res.finalUrl) {
+          attachSources(`Site audit: ${new URL(res.finalUrl).hostname}`, [
+            { title: res.title || res.finalUrl, url: res.finalUrl },
+          ]);
+        }
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Audit failed";
+      setResult({ url: u, findings: [], links: [], error: msg });
+      addActivity({ tool: "firecrawl.scrape", reason: u, result: `✗ ${msg}` });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-border bg-card/60">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
+        <Globe className="h-3.5 w-3.5 text-accent" />
+        <div className="mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          Site Audit · Firecrawl Scrape
+        </div>
+      </div>
+
+      <div className="space-y-3 p-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
+          className="flex gap-2"
+        >
+          <div className="relative flex-1">
+            <Globe className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="example.com or https://suspicious-site.io"
+              maxLength={500}
+              className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading || !url.trim()}
+            className="mono inline-flex items-center gap-2 rounded-md border border-primary/50 bg-primary/10 px-3 py-2 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/20 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+            Audit
+          </button>
+        </form>
+
+        {!result && !loading && (
+          <p className="text-xs text-muted-foreground">
+            Paste any URL. Djinn scrapes it server-side via Firecrawl, then flags redirects, scam-pattern language, and off-domain links.
+          </p>
+        )}
+
+        {result?.error && (
+          <div className="rounded border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
+            {result.error}
+          </div>
+        )}
+
+        {result && !result.error && (
+          <div className="space-y-3">
+            <div className="rounded border border-border/60 bg-background/60 p-3">
+              <div className="mono text-[10px] uppercase tracking-wider text-accent">
+                {result.finalUrl ? new URL(result.finalUrl).hostname : ""}
+              </div>
+              {result.title && (
+                <div className="mt-0.5 text-sm font-medium text-foreground">{result.title}</div>
+              )}
+              {(result.summary || result.description) && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {result.summary || result.description}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="mono mb-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                Findings
+              </div>
+              <ul className="space-y-1.5">
+                {result.findings.map((f, i) => {
+                  const Icon =
+                    f.severity === "risk" ? AlertTriangle : f.severity === "warn" ? AlertTriangle : Info;
+                  const color =
+                    f.severity === "risk"
+                      ? "text-destructive border-destructive/40 bg-destructive/10"
+                      : f.severity === "warn"
+                        ? "text-accent border-accent/40 bg-accent/10"
+                        : "text-muted-foreground border-border bg-background/60";
+                  return (
+                    <li key={i} className={`flex items-start gap-2 rounded border ${color} p-2`}>
+                      <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-xs font-medium">{f.label}</div>
+                        <div className="text-[11px] opacity-80">{f.detail}</div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {result.links.length > 0 && (
+              <div>
+                <div className="mono mb-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Off-domain links ({result.links.length})
+                </div>
+                <ul className="space-y-1">
+                  {result.links.slice(0, 8).map((l) => (
+                    <li key={l}>
+                      <a
+                        href={l}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        <span className="truncate">{l}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
