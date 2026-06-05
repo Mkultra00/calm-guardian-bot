@@ -179,6 +179,10 @@ export function BreakingNews() {
               <a
                 href={i.link}
                 referrerPolicy="no-referrer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.assign(i.link);
+                }}
                 className="group flex-1 text-xs leading-snug text-foreground hover:text-accent"
               >
                 {i.title}
