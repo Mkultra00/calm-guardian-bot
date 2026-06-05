@@ -10,7 +10,6 @@ export function SiteAudit() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SiteAuditResult | null>(null);
-  const [opinionRole, setOpinionRole] = useState<"ciso" | "nhi" | null>(null);
   const [opinionLoading, setOpinionLoading] = useState<"ciso" | "nhi" | null>(null);
   const [opinions, setOpinions] = useState<Record<"ciso" | "nhi", { persona: string; text: string } | undefined>>({
     ciso: undefined,
@@ -58,7 +57,6 @@ export function SiteAudit() {
   const askSpecialist = async (role: "ciso" | "nhi") => {
     if (!result || result.error || opinionLoading) return;
     setOpinionLoading(role);
-    setOpinionRole(role);
     addActivity({
       tool: role === "ciso" ? "specialist.ciso" : "specialist.nhi",
       reason: `Opinion on ${result.finalUrl ?? result.url}`,
