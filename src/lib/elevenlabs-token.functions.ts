@@ -9,7 +9,7 @@ type TokenResult =
 export const getElevenLabsToken = createServerFn({ method: "POST" })
   .inputValidator((data: { agent?: AgentKind } | undefined) => data ?? {})
   .handler(async ({ data }) => {
-    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const apiKey = process.env.ELEVENLABS_API_KEY_1 ?? process.env.ELEVENLABS_API_KEY;
     const kind: AgentKind = data?.agent === "nhi" ? "nhi" : "guardian";
     const agentId =
       kind === "nhi"
