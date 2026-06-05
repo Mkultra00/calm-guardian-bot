@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Radio, Square, Loader2, ExternalLink } from "lucide-react";
+import { Radio, Square, Loader2, ExternalLink, Volume2, VolumeX } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchThreatNews, type NewsItem } from "@/lib/threat-news.functions";
+import { synthesizeSpeech } from "@/lib/tts.functions";
 
 const POLL_MS = 30_000;
 
