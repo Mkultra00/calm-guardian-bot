@@ -44,6 +44,8 @@ interface CipherCtx {
   runDemo: () => void;
   isRunningDemo: boolean;
   error: string | null;
+  addActivity: (a: { tool: string; reason: string; result?: string }) => void;
+  attachSources: (scamType: string, sources: { title?: string; url: string }[]) => void;
 }
 
 const Ctx = createContext<CipherCtx | null>(null);
@@ -224,6 +226,35 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
     }, threatDelay + 600);
   }, []);
 
+  const addActivity = useCallback(
+    (a: { tool: string; reason: string; result?: string }) => {
+      setActivities((prev) => [
+        ...prev,
+        { id: nextId(), ts: Date.now(), tool: a.tool, reason: a.reason, result: a.result },
+      ]);
+    },
+    [],
+  );
+
+  const attachSources = useCallback(
+    (scamType: string, sources: { title?: string; url: string }[]) => {
+      setThreat((prev) => {
+        if (prev) {
+          const existing = new Set(prev.sources.map((s) => s.url));
+          const merged = [...prev.sources, ...sources.filter((s) => !existing.has(s.url))];
+          return { ...prev, sources: merged };
+        }
+        return {
+          scam_type: scamType,
+          risk: "MEDIUM",
+          do_now: ["Review the sources below before acting.", "Do not click links from unverified senders."],
+          sources,
+        };
+      });
+    },
+    [],
+  );
+
   const value: CipherCtx = useMemo(
     () => ({
       status,
@@ -240,8 +271,10 @@ function InnerCipherProvider({ children }: { children: ReactNode }) {
       runDemo,
       isRunningDemo,
       error,
+      addActivity,
+      attachSources,
     }),
-    [status, activities, threat, transcript, conversation.status, conversation.isSpeaking, isConnecting, activeAgent, start, stop, sendThreat, runDemo, isRunningDemo, error],
+    [status, activities, threat, transcript, conversation.status, conversation.isSpeaking, isConnecting, activeAgent, start, stop, sendThreat, runDemo, isRunningDemo, error, addActivity, attachSources],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

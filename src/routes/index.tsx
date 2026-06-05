@@ -10,6 +10,7 @@ import { UploadAnalyzer } from "@/components/cipher/UploadAnalyzer";
 import { CisoScenarios } from "@/components/cipher/CisoScenarios";
 import { NhiThreats } from "@/components/cipher/NhiThreats";
 import { BreakingNews } from "@/components/cipher/BreakingNews";
+import { ScamSearch } from "@/components/cipher/ScamSearch";
 import { Play, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -83,6 +84,8 @@ function Index() {
           </div>
 
           <UploadAnalyzer />
+
+          <ScamSearch />
 
           <CisoScenarios />
 
