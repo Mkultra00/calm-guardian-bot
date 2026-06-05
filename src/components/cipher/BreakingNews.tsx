@@ -11,9 +11,13 @@ export function BreakingNews() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [voiceOn, setVoiceOn] = useState(false);
   const seen = useRef<Set<string>>(new Set());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchNews = useServerFn(fetchThreatNews);
+  const tts = useServerFn(synthesizeSpeech);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const spokenIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!streaming) {
