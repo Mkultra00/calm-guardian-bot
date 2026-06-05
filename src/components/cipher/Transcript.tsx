@@ -56,6 +56,13 @@ export function Transcript() {
     wasRunningDemo.current = isRunningDemo;
   }, [isRunningDemo]);
 
+  useEffect(() => {
+    if (isConnected && !wasConnected.current) {
+      setVoiceOn(false);
+    }
+    wasConnected.current = isConnected;
+  }, [isConnected]);
+
   const downloadTranscript = () => {
     const lines = transcript.map((m) => {
       const time = new Date(m.ts).toISOString();
