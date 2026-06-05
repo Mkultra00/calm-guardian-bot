@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2 } from "lucide-react";
+import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
 import { getSpecialistOpinion } from "@/lib/specialist-opinion.functions";
@@ -11,7 +11,15 @@ export function SiteAudit() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SiteAuditResult | null>(null);
   const [opinionLoading, setOpinionLoading] = useState<"ciso" | "nhi" | null>(null);
-  const [opinions, setOpinions] = useState<Record<"ciso" | "nhi", { persona: string; text: string } | undefined>>({
+  type Opinion = {
+    persona: string;
+    voiceId: string;
+    verdict: "safe" | "suspicious" | "malicious";
+    headline: string;
+    sections: { title: string; body: string }[];
+    spoken: string;
+  };
+  const [opinions, setOpinions] = useState<Record<"ciso" | "nhi", Opinion | undefined>>({
     ciso: undefined,
     nhi: undefined,
   });
@@ -71,7 +79,17 @@ export function SiteAudit() {
           findings: result.findings,
         },
       });
-      setOpinions((p) => ({ ...p, [role]: { persona: res.persona, text: res.opinion } }));
+      setOpinions((p) => ({
+        ...p,
+        [role]: {
+          persona: res.persona,
+          voiceId: res.voiceId,
+          verdict: res.verdict,
+          headline: res.headline,
+          sections: res.sections,
+          spoken: res.spoken,
+        },
+      }));
       addActivity({
         tool: role === "ciso" ? "specialist.ciso" : "specialist.nhi",
         reason: result.finalUrl ?? result.url,
@@ -79,7 +97,17 @@ export function SiteAudit() {
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Opinion failed";
-      setOpinions((p) => ({ ...p, [role]: { persona: role === "ciso" ? "CISO" : "NHI", text: `Error: ${msg}` } }));
+      setOpinions((p) => ({
+        ...p,
+        [role]: {
+          persona: role === "ciso" ? "CISO" : "NHI",
+          voiceId: "",
+          verdict: "suspicious",
+          headline: `Error: ${msg}`,
+          sections: [],
+          spoken: msg,
+        },
+      }));
     } finally {
       setOpinionLoading(null);
     }
@@ -90,8 +118,8 @@ export function SiteAudit() {
     if (!o || audioLoading) return;
     setAudioLoading(role);
     try {
-      const voiceId = role === "ciso" ? "JBFqnCBsd6RMkjVDRZzb" : "TX3LPaxmHKxFdv7VOQHJ";
-      const res = await runTts({ data: { text: o.text, voiceId } });
+      const voiceId = o.voiceId || (role === "ciso" ? "JBFqnCBsd6RMkjVDRZzb" : "TX3LPaxmHKxFdv7VOQHJ");
+      const res = await runTts({ data: { text: o.spoken || o.headline, voiceId } });
       const audio = new Audio(`data:audio/mpeg;base64,${res.audio}`);
       await audio.play();
     } catch (e) {
@@ -244,6 +272,14 @@ export function SiteAudit() {
                 const o = opinions[role];
                 if (!o) return null;
                 const isCiso = role === "ciso";
+                const VerdictIcon =
+                  o.verdict === "malicious" ? ShieldAlert : o.verdict === "safe" ? ShieldCheck : ShieldQuestion;
+                const verdictColor =
+                  o.verdict === "malicious"
+                    ? "text-destructive border-destructive/40 bg-destructive/10"
+                    : o.verdict === "safe"
+                      ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
+                      : "text-accent border-accent/40 bg-accent/10";
                 return (
                   <div
                     key={role}
@@ -262,7 +298,28 @@ export function SiteAudit() {
                         Play
                       </button>
                     </div>
-                    <p className="mt-1.5 whitespace-pre-wrap text-xs text-foreground">{o.text}</p>
+                    <div className={`mono mt-2 inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[10px] uppercase tracking-widest ${verdictColor}`}>
+                      <VerdictIcon className="h-3 w-3" />
+                      {o.verdict}
+                    </div>
+                    {o.headline && (
+                      <p className="mt-2 text-sm font-medium text-foreground">{o.headline}</p>
+                    )}
+                    {o.sections.length > 0 && (
+                      <dl className="mt-2 space-y-2">
+                        {o.sections.map((s, i) => (
+                          <div key={i} className="rounded border border-border/60 bg-background/40 p-2">
+                            <dt className="mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                              {s.title}
+                            </dt>
+                            <dd className="mt-1 text-xs text-foreground">{s.body}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+                    {o.sections.length === 0 && o.spoken && o.spoken !== o.headline && (
+                      <p className="mt-2 whitespace-pre-wrap text-xs text-foreground">{o.spoken}</p>
+                    )}
                   </div>
                 );
               })}

@@ -20,13 +20,15 @@ const schema = z.object({
 const PERSONAS = {
   ciso: {
     name: "CISO Specialist",
+    voiceId: "JBFqnCBsd6RMkjVDRZzb",
     system:
-      "You are an enterprise Chief Information Security Officer. Give a sharp, executive-level opinion on the audited site: business risk, likely intent of the operator, what an enterprise should do (block, investigate, report). Keep it to 4-6 short sentences, plain spoken — this will be read aloud.",
+      "You are an enterprise Chief Information Security Officer giving a spoken briefing. Respond ONLY with valid JSON matching this shape: {\"verdict\":\"safe|suspicious|malicious\",\"headline\":\"one short sentence\",\"sections\":[{\"title\":\"Business Risk\",\"body\":\"...\"},{\"title\":\"Likely Intent\",\"body\":\"...\"},{\"title\":\"Recommended Action\",\"body\":\"...\"}],\"spoken\":\"a natural 4-6 sentence narration suitable for text-to-speech, no markdown\"}. Be sharp and executive. No prose outside the JSON.",
   },
   nhi: {
     name: "NHI / AI Threat Specialist",
+    voiceId: "TX3LPaxmHKxFdv7VOQHJ",
     system:
-      "You are a Non-Human Identity & AI threat specialist. Focus on whether the site looks AI-generated, uses prompt-injection bait, harvests credentials/tokens, or targets autonomous agents. Give a 4-6 sentence spoken opinion with concrete next steps.",
+      "You are a Non-Human Identity & AI threat specialist giving a spoken briefing. Respond ONLY with valid JSON matching this shape: {\"verdict\":\"safe|suspicious|malicious\",\"headline\":\"one short sentence\",\"sections\":[{\"title\":\"AI / Bot Signals\",\"body\":\"...\"},{\"title\":\"Credential & Token Risk\",\"body\":\"...\"},{\"title\":\"Agent Hardening Steps\",\"body\":\"...\"}],\"spoken\":\"a natural 4-6 sentence narration suitable for text-to-speech, no markdown\"}. No prose outside the JSON.",
   },
 } as const;
 
@@ -54,6 +56,7 @@ Give your specialist opinion.`;
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
+        response_format: { type: "json_object" },
         messages: [
           { role: "system", content: persona.system },
           { role: "user", content: userPrompt },
@@ -67,6 +70,25 @@ Give your specialist opinion.`;
       throw new Error(`Opinion failed: ${res.status} ${t}`);
     }
     const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const opinion = json.choices?.[0]?.message?.content?.trim() ?? "";
-    return { role: data.role, persona: persona.name, opinion };
+    const raw = json.choices?.[0]?.message?.content?.trim() ?? "";
+    let parsed: {
+      verdict?: "safe" | "suspicious" | "malicious";
+      headline?: string;
+      sections?: { title: string; body: string }[];
+      spoken?: string;
+    } = {};
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { headline: raw.slice(0, 200), spoken: raw, sections: [] };
+    }
+    return {
+      role: data.role,
+      persona: persona.name,
+      voiceId: persona.voiceId,
+      verdict: parsed.verdict ?? "suspicious",
+      headline: parsed.headline ?? "",
+      sections: parsed.sections ?? [],
+      spoken: parsed.spoken ?? parsed.headline ?? "",
+    };
   });
