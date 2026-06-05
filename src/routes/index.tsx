@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import avatar from "@/assets/flaming-eyeball-avatar.png";
 import { CipherProvider, useCipher } from "@/hooks/use-cipher";
 import { ShieldStatus } from "@/components/cipher/ShieldStatus";
 import { Transcript } from "@/components/cipher/Transcript";
