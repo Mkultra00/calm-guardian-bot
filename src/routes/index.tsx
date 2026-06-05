@@ -6,7 +6,6 @@ import { Transcript } from "@/components/cipher/Transcript";
 import { ToolActivityLog } from "@/components/cipher/ToolActivityLog";
 import { ThreatCard } from "@/components/cipher/ThreatCard";
 import { DemoTriggers } from "@/components/cipher/DemoTriggers";
-import { SessionControl } from "@/components/cipher/SessionControl";
 import { UploadAnalyzer } from "@/components/cipher/UploadAnalyzer";
 import { CisoScenarios } from "@/components/cipher/CisoScenarios";
 import { NhiThreats } from "@/components/cipher/NhiThreats";
