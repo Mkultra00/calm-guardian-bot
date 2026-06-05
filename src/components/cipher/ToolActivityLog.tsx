@@ -20,7 +20,7 @@ export function ToolActivityLog() {
       <div className="cipher-scan relative flex-1 overflow-y-auto p-3 font-mono text-xs">
         {activities.length === 0 && (
           <p className="text-muted-foreground">
-            // No tool calls yet. CIPHER will narrate every search and analysis here.
+            // No tool calls yet. Djinn will narrate every search and analysis here.
           </p>
         )}
         <ul className="space-y-2">

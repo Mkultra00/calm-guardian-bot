@@ -13,9 +13,9 @@ import { Play, Loader2 } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CIPHER Guardian — Voice-First Family Scam Shield" },
-      { name: "description", content: "CIPHER is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
-      { property: "og:title", content: "CIPHER Guardian" },
+      { title: "Djinn (Deployed Joint Intelligence Neural Network)" },
+      { name: "description", content: "Djinn is a calm voice guardian that shields you and your family from phishing, scam calls, and AI voice-clone attacks." },
+      { property: "og:title", content: "Djinn" },
       { property: "og:description", content: "Voice-first family scam shield." },
     ],
   }),
@@ -33,10 +33,10 @@ function Index() {
                 Black Chamber · Seraph Systems
               </div>
               <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-                CIPHER <span className="text-primary">Guardian</span>
+                Djinn <span className="text-primary">(Deployed Joint Intelligence Neural Network)</span>
               </h1>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Voice-first family scam shield. CIPHER listens, researches, and
+                Voice-first family scam shield. Djinn listens, researches, and
                 explains threats — calmly and in plain language.
               </p>
             </div>
@@ -72,7 +72,7 @@ function Index() {
           <NhiThreats />
 
           <footer className="mono pt-2 text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            Every action visible · CIPHER never obeys the attacker · Keys stay server-side
+            Every action visible · Djinn never obeys the attacker · Keys stay server-side
           </footer>
         </div>
       </div>

@@ -12,7 +12,7 @@ export function ThreatCard() {
           No active threat
         </p>
         <p className="mt-2 max-w-xs text-xs text-muted-foreground">
-          When CIPHER analyzes a suspicious event, the verdict lands here.
+          When Djinn analyzes a suspicious event, the verdict lands here.
         </p>
       </div>
     );

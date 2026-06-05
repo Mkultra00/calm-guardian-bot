@@ -85,7 +85,7 @@ export function NhiThreats() {
             ) : (
               <Mic className="h-3.5 w-3.5" />
             )}
-            {isConnected ? "Guardian Active" : "Start NHI Specialist"}
+            {isConnected ? "Djinn Active" : "Start NHI Specialist"}
           </button>
         )}
       </div>

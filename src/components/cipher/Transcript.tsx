@@ -18,13 +18,13 @@ export function Transcript() {
       <div ref={ref} className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
         {transcript.length === 0 && (
           <p className="mono text-xs text-muted-foreground">
-            Awaiting conversation. Start a session — or click <strong>Run Demo</strong> to watch CIPHER analyze a synthetic phishing attack.
+            Awaiting conversation. Start a session — or click <strong>Run Demo</strong> to watch Djinn analyze a synthetic phishing attack.
           </p>
         )}
         {transcript.map((m) => (
           <div key={m.id} className="space-y-1">
             <div className="mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              {m.role === "user" ? "▶ You" : "◆ CIPHER"}
+              {m.role === "user" ? "▶ You" : "◆ Djinn"}
             </div>
             <div
               className={`whitespace-pre-wrap rounded-md px-3 py-2 ${
