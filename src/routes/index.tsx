@@ -28,9 +28,14 @@ function Index() {
     <CipherProvider>
       <div className="min-h-screen bg-background text-foreground">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:p-6">
-          <header className="flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-4">
-              <div>
+          <header className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-2">
+              <img
+                src={avatar}
+                alt="DJINN Avatar"
+                className="h-28 w-28 shrink-0 rounded-full border-2 border-primary/40 object-cover shadow-xl shadow-primary/20 sm:h-36 sm:w-36"
+              />
+              <div className="text-center">
                 <div className="mono text-[10px] uppercase tracking-[0.3em] text-primary">
                   Black Chamber · Seraph Systems
                 </div>
@@ -45,11 +50,6 @@ function Index() {
                   explains threats — calmly and in plain language.
                 </p>
               </div>
-              <img
-                src={avatar}
-                alt="DJINN Avatar"
-                className="h-16 w-16 shrink-0 rounded-full border-2 border-primary/40 object-cover shadow-lg sm:h-20 sm:w-20"
-              />
             </div>
           </header>
 
