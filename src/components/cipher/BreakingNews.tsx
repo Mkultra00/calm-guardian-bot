@@ -36,6 +36,24 @@ export function BreakingNews() {
         incoming.forEach((i) => seen.current.add(i.id));
         if (incoming.length) {
           setItems((prev) => [...incoming, ...prev].slice(0, 50));
+          if (voiceOn && incoming[0]) {
+            const headline = incoming[0].title;
+            if (!spokenIds.current.has(incoming[0].id)) {
+              spokenIds.current.add(incoming[0].id);
+              (async () => {
+                try {
+                  const { audio } = await tts({ data: { text: headline } });
+                  if (!voiceOn) return;
+                  const el = new Audio(`data:audio/mpeg;base64,${audio}`);
+                  audioRef.current?.pause();
+                  audioRef.current = el;
+                  await el.play();
+                } catch (e) {
+                  console.error("News TTS error", e);
+                }
+              })();
+            }
+          }
         }
         setError(null);
       } catch (e) {
