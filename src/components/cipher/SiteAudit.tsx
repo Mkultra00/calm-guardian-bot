@@ -1,14 +1,25 @@
 import { useState } from "react";
-import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink } from "lucide-react";
+import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
+import { getSpecialistOpinion } from "@/lib/specialist-opinion.functions";
+import { synthesizeSpeech } from "@/lib/tts.functions";
 import { useCipher } from "@/hooks/use-cipher";
 
 export function SiteAudit() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SiteAuditResult | null>(null);
+  const [opinionRole, setOpinionRole] = useState<"ciso" | "nhi" | null>(null);
+  const [opinionLoading, setOpinionLoading] = useState<"ciso" | "nhi" | null>(null);
+  const [opinions, setOpinions] = useState<Record<"ciso" | "nhi", { persona: string; text: string } | undefined>>({
+    ciso: undefined,
+    nhi: undefined,
+  });
+  const [audioLoading, setAudioLoading] = useState<"ciso" | "nhi" | null>(null);
   const run = useServerFn(auditSite);
+  const runOpinion = useServerFn(getSpecialistOpinion);
+  const runTts = useServerFn(synthesizeSpeech);
   const { addActivity, attachSources } = useCipher();
 
   const submit = async () => {
@@ -41,6 +52,54 @@ export function SiteAudit() {
       addActivity({ tool: "firecrawl.scrape", reason: u, result: `✗ ${msg}` });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const askSpecialist = async (role: "ciso" | "nhi") => {
+    if (!result || result.error || opinionLoading) return;
+    setOpinionLoading(role);
+    setOpinionRole(role);
+    addActivity({
+      tool: role === "ciso" ? "specialist.ciso" : "specialist.nhi",
+      reason: `Opinion on ${result.finalUrl ?? result.url}`,
+    });
+    try {
+      const res = await runOpinion({
+        data: {
+          role,
+          url: result.finalUrl ?? result.url,
+          title: result.title,
+          summary: result.summary ?? result.description,
+          findings: result.findings,
+        },
+      });
+      setOpinions((p) => ({ ...p, [role]: { persona: res.persona, text: res.opinion } }));
+      addActivity({
+        tool: role === "ciso" ? "specialist.ciso" : "specialist.nhi",
+        reason: result.finalUrl ?? result.url,
+        result: "✓ Opinion delivered",
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Opinion failed";
+      setOpinions((p) => ({ ...p, [role]: { persona: role === "ciso" ? "CISO" : "NHI", text: `Error: ${msg}` } }));
+    } finally {
+      setOpinionLoading(null);
+    }
+  };
+
+  const playOpinion = async (role: "ciso" | "nhi") => {
+    const o = opinions[role];
+    if (!o || audioLoading) return;
+    setAudioLoading(role);
+    try {
+      const voiceId = role === "ciso" ? "JBFqnCBsd6RMkjVDRZzb" : "TX3LPaxmHKxFdv7VOQHJ";
+      const res = await runTts({ data: { text: o.text, voiceId } });
+      const audio = new Audio(`data:audio/mpeg;base64,${res.audio}`);
+      await audio.play();
+    } catch (e) {
+      console.warn("TTS playback failed", e);
+    } finally {
+      setAudioLoading(null);
     }
   };
 
@@ -159,6 +218,57 @@ export function SiteAudit() {
                 </ul>
               </div>
             )}
+
+            <div className="border-t border-border/60 pt-3">
+              <div className="mono mb-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                Specialist Opinions
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => askSpecialist("ciso")}
+                  disabled={opinionLoading !== null}
+                  className="mono inline-flex items-center gap-2 rounded-md border border-primary/50 bg-primary/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary hover:bg-primary/20 disabled:opacity-50"
+                >
+                  {opinionLoading === "ciso" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Brain className="h-3 w-3" />}
+                  Ask CISO
+                </button>
+                <button
+                  onClick={() => askSpecialist("nhi")}
+                  disabled={opinionLoading !== null}
+                  className="mono inline-flex items-center gap-2 rounded-md border border-accent/50 bg-accent/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-accent hover:bg-accent/20 disabled:opacity-50"
+                >
+                  {opinionLoading === "nhi" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Bot className="h-3 w-3" />}
+                  Ask NHI
+                </button>
+              </div>
+
+              {(["ciso", "nhi"] as const).map((role) => {
+                const o = opinions[role];
+                if (!o) return null;
+                const isCiso = role === "ciso";
+                return (
+                  <div
+                    key={role}
+                    className={`mt-2 rounded border p-3 ${isCiso ? "border-primary/40 bg-primary/5" : "border-accent/40 bg-accent/5"}`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className={`mono text-[10px] uppercase tracking-wider ${isCiso ? "text-primary" : "text-accent"}`}>
+                        {o.persona}
+                      </div>
+                      <button
+                        onClick={() => playOpinion(role)}
+                        disabled={audioLoading !== null}
+                        className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground disabled:opacity-50"
+                      >
+                        {audioLoading === role ? <Loader2 className="h-3 w-3 animate-spin" /> : <Volume2 className="h-3 w-3" />}
+                        Play
+                      </button>
+                    </div>
+                    <p className="mt-1.5 whitespace-pre-wrap text-xs text-foreground">{o.text}</p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
