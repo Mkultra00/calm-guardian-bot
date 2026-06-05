@@ -195,6 +195,55 @@ export function SiteAudit() {
     }
   };
 
+  const downloadTranscript = () => {
+    if (!discussion || !result) return;
+    const url = result.finalUrl ?? result.url;
+    let text = `Specialist Discussion Transcript\n${"=".repeat(40)}\n`;
+    text += `Site: ${url}\n`;
+    text += `Title: ${result.title ?? "(none)"}\n`;
+    text += `Verdict: ${discussion.verdict.toUpperCase()}\n`;
+    if (discussion.conventionalRisk) {
+      text += `Conventional Risk: ${discussion.conventionalRisk.toUpperCase()}\n`;
+    }
+    if (discussion.nhiRisk) {
+      text += `NHI Risk: ${discussion.nhiRisk.toUpperCase()}\n`;
+    }
+    text += `\nSummary:\n${discussion.summary}\n\n`;
+    text += `${"=".repeat(40)}\nConversation\n${"=".repeat(40)}\n\n`;
+    discussion.turns.forEach((t, i) => {
+      const speaker = t.speaker === "ciso" ? "CISO" : "NHI";
+      text += `[${i + 1}] ${speaker}:\n${t.text}\n\n`;
+    });
+    const blob = new Blob([text], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `cipher-discussion-${new URL(url).hostname}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  const downloadJson = () => {
+    if (!discussion || !result) return;
+    const url = result.finalUrl ?? result.url;
+    const payload = {
+      site: url,
+      title: result.title ?? null,
+      verdict: discussion.verdict,
+      summary: discussion.summary,
+      conventionalRisk: discussion.conventionalRisk ?? null,
+      nhiRisk: discussion.nhiRisk ?? null,
+      findings: result.findings.map((f) => ({ label: f.label, detail: f.detail, severity: f.severity })),
+      conversation: discussion.turns.map((t) => ({ speaker: t.speaker, text: t.text })),
+      generatedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `cipher-discussion-${new URL(url).hostname}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
   return (
     <div className="rounded-lg border border-border bg-card/60">
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
