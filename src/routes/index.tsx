@@ -8,6 +8,7 @@ import { ThreatCard } from "@/components/cipher/ThreatCard";
 import { DemoTriggers } from "@/components/cipher/DemoTriggers";
 import { SessionControl } from "@/components/cipher/SessionControl";
 import { UploadAnalyzer } from "@/components/cipher/UploadAnalyzer";
+import { CisoScenarios } from "@/components/cipher/CisoScenarios";
 import { NhiThreats } from "@/components/cipher/NhiThreats";
 import { Play, Loader2 } from "lucide-react";
 
