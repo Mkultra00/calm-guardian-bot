@@ -7,7 +7,7 @@ export const synthesizeSpeech = createServerFn({ method: "POST" })
     return { text: data.text, voiceId: data.voiceId || "EXAVITQu4vr4xnSDxMaL" };
   })
   .handler(async ({ data }) => {
-    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const apiKey = process.env.ELEVENLABS_API_KEY_1 ?? process.env.ELEVENLABS_API_KEY;
     if (!apiKey) throw new Error("ElevenLabs not connected");
     const res = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${data.voiceId}?output_format=mp3_44100_128`,
