@@ -26,7 +26,7 @@ const PERSONAS = {
   },
   nhi: {
     name: "NHI / AI Threat Specialist",
-    voiceId: "TX3LPaxmHKxFdv7VOQHJ",
+    voiceId: "Xb7hH8MSUJpSbSDYk0k2",
     system:
       "You are a Non-Human Identity & AI threat specialist giving a spoken briefing. Respond ONLY with valid JSON matching this shape: {\"verdict\":\"safe|suspicious|malicious\",\"headline\":\"one short sentence\",\"sections\":[{\"title\":\"AI / Bot Signals\",\"body\":\"...\"},{\"title\":\"Credential & Token Risk\",\"body\":\"...\"},{\"title\":\"Agent Hardening Steps\",\"body\":\"...\"}],\"spoken\":\"a natural 4-6 sentence narration suitable for text-to-speech, no markdown\"}. No prose outside the JSON.",
   },
