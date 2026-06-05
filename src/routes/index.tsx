@@ -33,10 +33,10 @@ function Index() {
                 Black Chamber · Seraph Systems
               </div>
               <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-                CIPHER <span className="text-primary">Guardian</span>
+                Djinn <span className="text-primary">(Deployed Joint Intelligence Neural Network)</span>
               </h1>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Voice-first family scam shield. CIPHER listens, researches, and
+                Voice-first family scam shield. Djinn listens, researches, and
                 explains threats — calmly and in plain language.
               </p>
             </div>
