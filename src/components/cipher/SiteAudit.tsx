@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion } from "lucide-react";
+import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
 import { getSpecialistOpinion } from "@/lib/specialist-opinion.functions";
+import { getSpecialistDiscussion } from "@/lib/specialist-discussion.functions";
 import { synthesizeSpeech } from "@/lib/tts.functions";
 import { useCipher } from "@/hooks/use-cipher";
 
@@ -24,8 +25,19 @@ export function SiteAudit() {
     nhi: undefined,
   });
   const [audioLoading, setAudioLoading] = useState<"ciso" | "nhi" | null>(null);
+  type DiscussionTurn = { speaker: "ciso" | "nhi"; text: string; voiceId: string };
+  type Discussion = {
+    verdict: "safe" | "suspicious" | "malicious";
+    summary: string;
+    turns: DiscussionTurn[];
+  };
+  const [discussion, setDiscussion] = useState<Discussion | null>(null);
+  const [discussionLoading, setDiscussionLoading] = useState(false);
+  const [playingConv, setPlayingConv] = useState(false);
+  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
   const run = useServerFn(auditSite);
   const runOpinion = useServerFn(getSpecialistOpinion);
+  const runDiscussion = useServerFn(getSpecialistDiscussion);
   const runTts = useServerFn(synthesizeSpeech);
   const { addActivity, attachSources } = useCipher();
 
@@ -126,6 +138,58 @@ export function SiteAudit() {
       console.warn("TTS playback failed", e);
     } finally {
       setAudioLoading(null);
+    }
+  };
+
+  const discuss = async () => {
+    if (!result || result.error || discussionLoading) return;
+    setDiscussionLoading(true);
+    setDiscussion(null);
+    addActivity({
+      tool: "specialist.discussion",
+      reason: `Discussion on ${result.finalUrl ?? result.url}`,
+    });
+    try {
+      const res = await runDiscussion({
+        data: {
+          url: result.finalUrl ?? result.url,
+          title: result.title,
+          summary: result.summary ?? result.description,
+          findings: result.findings,
+        },
+      });
+      setDiscussion(res);
+      addActivity({
+        tool: "specialist.discussion",
+        reason: result.finalUrl ?? result.url,
+        result: `✓ ${res.turns.length} turns`,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Discussion failed";
+      setDiscussion({ verdict: "suspicious", summary: msg, turns: [] });
+    } finally {
+      setDiscussionLoading(false);
+    }
+  };
+
+  const playConversation = async () => {
+    if (!discussion || playingConv) return;
+    setPlayingConv(true);
+    try {
+      for (let i = 0; i < discussion.turns.length; i++) {
+        setPlayingIdx(i);
+        const t = discussion.turns[i];
+        const res = await runTts({ data: { text: t.text, voiceId: t.voiceId } });
+        const audio = new Audio(`data:audio/mpeg;base64,${res.audio}`);
+        await new Promise<void>((resolve) => {
+          audio.onended = () => resolve();
+          audio.onerror = () => resolve();
+          audio.play().catch(() => resolve());
+        });
+      }
+    } finally {
+      setPlayingConv(false);
+      setPlayingIdx(null);
     }
   };
 
@@ -266,6 +330,14 @@ export function SiteAudit() {
                   {opinionLoading === "nhi" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Bot className="h-3 w-3" />}
                   Ask NHI
                 </button>
+                <button
+                  onClick={discuss}
+                  disabled={discussionLoading}
+                  className="mono inline-flex items-center gap-2 rounded-md border border-foreground/30 bg-gradient-to-r from-primary/15 to-accent/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-foreground hover:from-primary/25 hover:to-accent/25 disabled:opacity-50"
+                >
+                  {discussionLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessagesSquare className="h-3 w-3" />}
+                  Let Them Discuss
+                </button>
               </div>
 
               {(["ciso", "nhi"] as const).map((role) => {
@@ -323,6 +395,61 @@ export function SiteAudit() {
                   </div>
                 );
               })}
+
+              {discussion && (
+                <div className="mt-3 rounded border border-border bg-background/40 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      CISO ⇄ NHI Discussion
+                    </div>
+                    {discussion.turns.length > 0 && (
+                      <button
+                        onClick={playConversation}
+                        disabled={playingConv}
+                        className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground disabled:opacity-50"
+                      >
+                        {playingConv ? <Square className="h-3 w-3 animate-pulse" /> : <Play className="h-3 w-3" />}
+                        {playingConv ? "Playing…" : "Play Conversation"}
+                      </button>
+                    )}
+                  </div>
+                  {discussion.summary && (
+                    <p className="mt-2 text-xs italic text-muted-foreground">{discussion.summary}</p>
+                  )}
+                  <div className="mt-3 space-y-2">
+                    {discussion.turns.map((t, i) => {
+                      const isCiso = t.speaker === "ciso";
+                      const active = playingIdx === i;
+                      return (
+                        <div
+                          key={i}
+                          className={`flex gap-2 ${isCiso ? "" : "flex-row-reverse"}`}
+                        >
+                          <div
+                            className={`mono flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[9px] uppercase ${
+                              isCiso ? "border-primary/50 bg-primary/10 text-primary" : "border-accent/50 bg-accent/10 text-accent"
+                            } ${active ? "ring-2 ring-foreground/40" : ""}`}
+                          >
+                            {isCiso ? <Brain className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
+                          </div>
+                          <div
+                            className={`max-w-[85%] rounded-lg border px-3 py-2 text-xs ${
+                              isCiso
+                                ? "border-primary/30 bg-primary/5 text-foreground"
+                                : "border-accent/30 bg-accent/5 text-foreground"
+                            } ${active ? "ring-1 ring-foreground/30" : ""}`}
+                          >
+                            <div className={`mono mb-1 text-[9px] uppercase tracking-wider ${isCiso ? "text-primary" : "text-accent"}`}>
+                              {isCiso ? "CISO" : "NHI"}
+                            </div>
+                            <p className="whitespace-pre-wrap">{t.text}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
