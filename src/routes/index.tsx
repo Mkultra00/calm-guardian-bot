@@ -27,7 +27,7 @@ function Index() {
     <CipherProvider>
       <div className="min-h-screen bg-background text-foreground">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:p-6">
-          <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <header className="flex flex-col gap-3">
             <div>
               <div className="mono text-[10px] uppercase tracking-[0.3em] text-primary">
                 Black Chamber · Seraph Systems
@@ -40,7 +40,6 @@ function Index() {
                 explains threats — calmly and in plain language.
               </p>
             </div>
-            <SessionControl />
           </header>
 
           <div className="flex items-center justify-center">
