@@ -467,6 +467,22 @@ export function SiteAudit() {
                   {discussion.summary && (
                     <p className="mt-2 text-xs italic text-muted-foreground">{discussion.summary}</p>
                   )}
+                  <div className="mono mt-2 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest">
+                    <button
+                      onClick={downloadTranscript}
+                      className="inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <Download className="h-3 w-3" />
+                      Transcript
+                    </button>
+                    <button
+                      onClick={downloadJson}
+                      className="inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <Download className="h-3 w-3" />
+                      JSON Log
+                    </button>
+                  </div>
                   {(discussion.conventionalRisk || discussion.nhiRisk) && (
                     <div className="mono mt-2 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest">
                       {discussion.conventionalRisk && (
