@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square, Download } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
@@ -37,6 +37,8 @@ export function SiteAudit() {
   const [discussionLoading, setDiscussionLoading] = useState(false);
   const [playingConv, setPlayingConv] = useState(false);
   const [playingIdx, setPlayingIdx] = useState<number | null>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const stopRequestedRef = useRef(false);
   const run = useServerFn(auditSite);
   const runOpinion = useServerFn(getSpecialistOpinion);
   const runDiscussion = useServerFn(getSpecialistDiscussion);
@@ -176,23 +178,41 @@ export function SiteAudit() {
 
   const playConversation = async () => {
     if (!discussion || playingConv) return;
+    stopRequestedRef.current = false;
     setPlayingConv(true);
     try {
       for (let i = 0; i < discussion.turns.length; i++) {
+        if (stopRequestedRef.current) break;
         setPlayingIdx(i);
         const t = discussion.turns[i];
         const res = await runTts({ data: { text: t.text, voiceId: t.voiceId } });
+        if (stopRequestedRef.current) break;
         const audio = new Audio(`data:audio/mpeg;base64,${res.audio}`);
+        currentAudioRef.current = audio;
         await new Promise<void>((resolve) => {
           audio.onended = () => resolve();
           audio.onerror = () => resolve();
           audio.play().catch(() => resolve());
         });
+        currentAudioRef.current = null;
       }
     } finally {
+      stopRequestedRef.current = false;
       setPlayingConv(false);
       setPlayingIdx(null);
     }
+  };
+
+  const stopConversation = () => {
+    stopRequestedRef.current = true;
+    const a = currentAudioRef.current;
+    if (a) {
+      try { a.pause(); } catch {}
+      a.src = "";
+      currentAudioRef.current = null;
+    }
+    setPlayingConv(false);
+    setPlayingIdx(null);
   };
 
   const downloadTranscript = () => {
@@ -455,12 +475,11 @@ export function SiteAudit() {
                     </div>
                     {discussion.turns.length > 0 && (
                       <button
-                        onClick={playConversation}
-                        disabled={playingConv}
-                        className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground disabled:opacity-50"
+                        onClick={playingConv ? stopConversation : playConversation}
+                        className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
                       >
                         {playingConv ? <Square className="h-3 w-3 animate-pulse" /> : <Play className="h-3 w-3" />}
-                        {playingConv ? "Playing…" : "Play Conversation"}
+                        {playingConv ? "Stop" : "Play Conversation"}
                       </button>
                     )}
                   </div>
