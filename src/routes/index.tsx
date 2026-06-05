@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import avatar from "@/assets/flaming-eyeball-avatar.png";
 import { CipherProvider, useCipher } from "@/hooks/use-cipher";
 import { ShieldStatus } from "@/components/cipher/ShieldStatus";
 import { Transcript } from "@/components/cipher/Transcript";
@@ -28,20 +29,27 @@ function Index() {
       <div className="min-h-screen bg-background text-foreground">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:p-6">
           <header className="flex flex-col gap-3">
-            <div>
-              <div className="mono text-[10px] uppercase tracking-[0.3em] text-primary">
-                Black Chamber · Seraph Systems
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="mono text-[10px] uppercase tracking-[0.3em] text-primary">
+                  Black Chamber · Seraph Systems
+                </div>
+                <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+                  DJINN
+                </h1>
+                <div className="text-sm font-medium text-primary">
+                  Deployed Joint Intelligence Neural Network
+                </div>
+                <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                  Voice-first family scam shield. Djinn listens, researches, and
+                  explains threats — calmly and in plain language.
+                </p>
               </div>
-              <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-                DJINN
-              </h1>
-              <div className="text-sm font-medium text-primary">
-                Deployed Joint Intelligence Neural Network
-              </div>
-              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Voice-first family scam shield. Djinn listens, researches, and
-                explains threats — calmly and in plain language.
-              </p>
+              <img
+                src={avatar}
+                alt="DJINN Avatar"
+                className="h-16 w-16 shrink-0 rounded-full border-2 border-primary/40 object-cover shadow-lg sm:h-20 sm:w-20"
+              />
             </div>
           </header>
 
