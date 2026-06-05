@@ -18,7 +18,7 @@ const schema = z.object({
 
 const VOICES = {
   ciso: "JBFqnCBsd6RMkjVDRZzb",
-  nhi: "TX3LPaxmHKxFdv7VOQHJ",
+  nhi: "Xb7hH8MSUJpSbSDYk0k2",
 } as const;
 
 const SYSTEM = `You are simulating a candid back-and-forth conversation between two security specialists evaluating a website:
