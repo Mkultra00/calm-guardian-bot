@@ -34,7 +34,7 @@ function Index() {
               <img
                 src={avatar}
                 alt="DJINN Avatar"
-                className="h-28 w-28 shrink-0 rounded-full border-2 border-primary/40 object-cover shadow-xl shadow-primary/20 sm:h-36 sm:w-36"
+                className="eye-blink h-28 w-28 shrink-0 rounded-full border-2 border-primary/40 object-cover shadow-xl shadow-primary/20 sm:h-36 sm:w-36"
               />
               <div className="text-center">
                 <div className="mono text-[10px] uppercase tracking-[0.3em] text-primary">
