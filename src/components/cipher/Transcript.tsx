@@ -5,9 +5,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { synthesizeSpeech } from "@/lib/tts.functions";
 
 export function Transcript() {
-  const { transcript } = useCipher();
+  const { transcript, isRunningDemo } = useCipher();
   const ref = useRef<HTMLDivElement>(null);
-  const [voiceOn, setVoiceOn] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(true);
+  const wasRunningDemo = useRef(false);
   const spokenIds = useRef<Set<string>>(new Set());
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const tts = useServerFn(synthesizeSpeech);
