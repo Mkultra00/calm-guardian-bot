@@ -11,6 +11,7 @@ import { CisoScenarios } from "@/components/cipher/CisoScenarios";
 import { NhiThreats } from "@/components/cipher/NhiThreats";
 import { BreakingNews } from "@/components/cipher/BreakingNews";
 import { ScamSearch } from "@/components/cipher/ScamSearch";
+import { SiteAudit } from "@/components/cipher/SiteAudit";
 import { Play, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -86,6 +87,8 @@ function Index() {
           <UploadAnalyzer />
 
           <ScamSearch />
+
+          <SiteAudit />
 
           <CisoScenarios />
 
