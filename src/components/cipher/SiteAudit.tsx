@@ -29,6 +29,8 @@ export function SiteAudit() {
   type Discussion = {
     verdict: "safe" | "suspicious" | "malicious";
     summary: string;
+    conventionalRisk?: "low" | "medium" | "high" | null;
+    nhiRisk?: "low" | "medium" | "high" | null;
     turns: DiscussionTurn[];
   };
   const [discussion, setDiscussion] = useState<Discussion | null>(null);
