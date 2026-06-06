@@ -557,6 +557,25 @@ export function SiteAudit() {
                       </span>
                     )}
                   </div>
+                  <div className="mt-2">
+                    <label className="mono mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      <Webhook className="h-3 w-3" />
+                      Alert webhook (POST JSON on change)
+                    </label>
+                    <input
+                      type="url"
+                      value={webhookUrl}
+                      onChange={(e) => persistWebhook(e.target.value)}
+                      placeholder="https://threat-detection.example.com/alerts"
+                      className="w-full rounded border border-border bg-background py-1.5 px-2 text-[11px] font-mono focus:border-primary focus:outline-none"
+                    />
+                    {lastAlert && (
+                      <div className="mono mt-1 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-emerald-400">
+                        <BellRing className="h-3 w-3" />
+                        {lastAlert}
+                      </div>
+                    )}
+                  </div>
                   {monitorChecks.length === 0 ? (
                     <p className="mt-2 text-xs text-muted-foreground">Baseline scrape in progress…</p>
                   ) : (
