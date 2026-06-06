@@ -53,7 +53,7 @@ export function SiteAudit() {
   const [monitorChecks, setMonitorChecks] = useState<SiteMonitorResult[]>([]);
   const [monitorBusy, setMonitorBusy] = useState(false);
   const monitorTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const MONITOR_INTERVAL_MS = 60_000;
+  const MONITOR_INTERVAL_MS = 86_400_000; // 24 hours
 
   const [webhookUrl, setWebhookUrl] = useState("");
   const [lastAlert, setLastAlert] = useState<string | null>(null);
@@ -553,7 +553,7 @@ export function SiteAudit() {
                     </div>
                     {monitoring && (
                       <span className="mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                        every 60s
+                        every 24h
                       </span>
                     )}
                   </div>
