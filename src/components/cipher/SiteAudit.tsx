@@ -799,11 +799,15 @@ export function SiteAudit() {
                       </div>
                       <button
                         onClick={() => playOpinion(role)}
-                        disabled={audioLoading !== null}
-                        className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground disabled:opacity-50"
+                        disabled={audioLoading !== null && audioLoading !== role}
+                        className={`mono inline-flex items-center gap-1 rounded border px-2 py-1 text-[10px] uppercase tracking-widest disabled:opacity-50 ${
+                          playingOpinion === role
+                            ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+                            : "border-border bg-background/60 text-muted-foreground hover:text-foreground"
+                        }`}
                       >
-                        {audioLoading === role ? <Loader2 className="h-3 w-3 animate-spin" /> : <Volume2 className="h-3 w-3" />}
-                        Play
+                        {audioLoading === role ? <Loader2 className="h-3 w-3 animate-spin" /> : playingOpinion === role ? <Square className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                        {playingOpinion === role ? "Stop" : "Play"}
                       </button>
                     </div>
                     <div className={`mono mt-2 inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[10px] uppercase tracking-widest ${verdictColor}`}>
