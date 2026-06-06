@@ -611,6 +611,85 @@ export function SiteAudit() {
                 </button>
               </div>
 
+              {monitoredSites.length > 0 && (
+                <div className="mt-3 rounded border border-border bg-background/40 p-3">
+                  <div className="mono mb-2 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Radar className="h-3 w-3" />
+                      Monitored Sites ({monitoredSites.length})
+                    </span>
+                    <span>change = ✓</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {monitoredSites.map((s) => {
+                      let host = s.url;
+                      try { host = new URL(s.url).hostname; } catch {}
+                      const statusColor =
+                        s.lastStatus === "error"
+                          ? "text-destructive"
+                          : s.lastStatus === "changed" || s.lastStatus === "new" || s.lastStatus === "removed"
+                            ? "text-accent"
+                            : s.lastStatus === "checking"
+                              ? "text-primary"
+                              : "text-muted-foreground";
+                      return (
+                        <li
+                          key={s.url}
+                          className={`flex items-center justify-between gap-2 rounded border px-2 py-1.5 text-[11px] ${
+                            s.changeDetected
+                              ? "border-emerald-500/50 bg-emerald-500/10"
+                              : "border-border bg-background/60"
+                          }`}
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            <button
+                              onClick={() => clearChangeFlag(s.url)}
+                              title={s.changeDetected ? "Change detected — click to acknowledge" : "No change since last check"}
+                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+                                s.changeDetected
+                                  ? "border-emerald-500/60 bg-emerald-500/20 text-emerald-400"
+                                  : "border-border bg-background/60 text-muted-foreground/40"
+                              }`}
+                            >
+                              {s.changeDetected && <Check className="h-3 w-3" />}
+                            </button>
+                            <div className="min-w-0">
+                              <div className="truncate text-xs font-medium text-foreground">{host}</div>
+                              <div className={`mono text-[10px] uppercase tracking-wider ${statusColor}`}>
+                                {s.lastStatus ?? "pending"}
+                                {s.changeCount > 0 && (
+                                  <span className="ml-1 text-emerald-400">· {s.changeCount} change{s.changeCount > 1 ? "s" : ""}</span>
+                                )}
+                                {s.lastCheckedAt && (
+                                  <span className="ml-1 opacity-70">· {new Date(s.lastCheckedAt).toLocaleString()}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              onClick={() => performMonitorCheck(s.url)}
+                              disabled={monitorBusy}
+                              title="Check now"
+                              className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground disabled:opacity-50"
+                            >
+                              <Radar className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => removeSite(s.url)}
+                              title="Remove from list"
+                              className="mono inline-flex items-center gap-1 rounded border border-border bg-background/60 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
               {(monitoring || monitorChecks.length > 0) && (
                 <div className="mt-3 rounded border border-emerald-500/30 bg-emerald-500/5 p-3">
                   <div className="flex items-center justify-between gap-2">
