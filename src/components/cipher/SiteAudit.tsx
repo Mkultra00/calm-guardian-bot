@@ -465,7 +465,68 @@ export function SiteAudit() {
                   {discussionLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessagesSquare className="h-3 w-3" />}
                   Let Them Discuss
                 </button>
+                <button
+                  onClick={monitoring ? stopMonitoring : startMonitoring}
+                  className={`mono inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest disabled:opacity-50 ${
+                    monitoring
+                      ? "border-destructive/50 bg-destructive/10 text-destructive hover:bg-destructive/20"
+                      : "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                  }`}
+                >
+                  {monitoring ? (
+                    monitorBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Square className="h-3 w-3" />
+                  ) : (
+                    <Radar className="h-3 w-3" />
+                  )}
+                  {monitoring ? "Stop Monitoring" : "Monitor for Updates"}
+                </button>
               </div>
+
+              {(monitoring || monitorChecks.length > 0) && (
+                <div className="mt-3 rounded border border-emerald-500/30 bg-emerald-500/5 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="mono inline-flex items-center gap-2 text-[10px] uppercase tracking-wider text-emerald-400">
+                      <Radar className={`h-3 w-3 ${monitoring ? "animate-pulse" : ""}`} />
+                      Firecrawl Change Monitor {monitoring && "· active"}
+                    </div>
+                    {monitoring && (
+                      <span className="mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                        every 60s
+                      </span>
+                    )}
+                  </div>
+                  {monitorChecks.length === 0 ? (
+                    <p className="mt-2 text-xs text-muted-foreground">Baseline scrape in progress…</p>
+                  ) : (
+                    <ul className="mt-2 space-y-1.5">
+                      {monitorChecks.map((c, i) => {
+                        const status = c.changeStatus ?? (c.error ? "error" : "checked");
+                        const color =
+                          c.error
+                            ? "text-destructive border-destructive/40 bg-destructive/10"
+                            : status === "changed"
+                              ? "text-accent border-accent/40 bg-accent/10"
+                              : status === "new"
+                                ? "text-primary border-primary/40 bg-primary/10"
+                                : status === "removed"
+                                  ? "text-destructive border-destructive/40 bg-destructive/10"
+                                  : "text-muted-foreground border-border bg-background/60";
+                        return (
+                          <li key={i} className={`flex items-center justify-between gap-2 rounded border px-2 py-1.5 text-[11px] ${color}`}>
+                            <span className="mono uppercase tracking-wider">{status}</span>
+                            <span className="text-[10px] opacity-80">
+                              {new Date(c.checkedAt).toLocaleTimeString()}
+                              {c.previousScrapeAt && status !== "new" && (
+                                <> · prev {new Date(c.previousScrapeAt).toLocaleString()}</>
+                              )}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              )}
 
               {(["ciso", "nhi"] as const).map((role) => {
                 const o = opinions[role];
