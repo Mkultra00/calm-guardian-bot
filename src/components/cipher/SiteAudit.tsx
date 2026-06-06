@@ -312,14 +312,33 @@ export function SiteAudit() {
     }
   };
 
+  const stopOpinion = () => {
+    const a = opinionAudioRef.current;
+    if (a) {
+      try { a.pause(); } catch {}
+      a.src = "";
+      opinionAudioRef.current = null;
+    }
+    setPlayingOpinion(null);
+  };
+
   const playOpinion = async (role: "ciso" | "nhi") => {
     const o = opinions[role];
     if (!o || audioLoading) return;
+    if (playingOpinion === role) {
+      stopOpinion();
+      return;
+    }
+    stopConversation();
     setAudioLoading(role);
     try {
       const voiceId = o.voiceId || (role === "ciso" ? "JBFqnCBsd6RMkjVDRZzb" : "Xb7hH8MSUJpSbSDYk0k2");
       const res = await runTts({ data: { text: o.spoken || o.headline, voiceId } });
       const audio = new Audio(`data:audio/mpeg;base64,${res.audio}`);
+      opinionAudioRef.current = audio;
+      setPlayingOpinion(role);
+      audio.onended = () => setPlayingOpinion(null);
+      audio.onerror = () => setPlayingOpinion(null);
       await audio.play();
     } catch (e) {
       console.warn("TTS playback failed", e);
