@@ -289,6 +289,7 @@ export function SiteAudit() {
           spoken: res.spoken,
         },
       }));
+      await playOpinion(role);
       addActivity({
         tool: role === "ciso" ? "specialist.ciso" : "specialist.nhi",
         reason: result.finalUrl ?? result.url,
