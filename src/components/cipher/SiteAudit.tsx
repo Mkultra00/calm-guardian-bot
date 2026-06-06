@@ -384,6 +384,7 @@ export function SiteAudit() {
   const playConversation = async (overrideDiscussion?: Discussion) => {
     const disc = overrideDiscussion ?? discussion;
     if (!disc || playingConv) return;
+    stopOpinion();
     stopRequestedRef.current = false;
     setPlayingConv(true);
     try {
