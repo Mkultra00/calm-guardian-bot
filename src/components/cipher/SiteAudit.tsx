@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square, Download, Radar } from "lucide-react";
+import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square, Download, Radar, Webhook, BellRing } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
 import { getSpecialistOpinion } from "@/lib/specialist-opinion.functions";
 import { getSpecialistDiscussion } from "@/lib/specialist-discussion.functions";
 import { synthesizeSpeech } from "@/lib/tts.functions";
 import { checkSiteChanges, type SiteMonitorResult } from "@/lib/site-monitor.functions";
+import { sendAlertWebhook } from "@/lib/alert-webhook.functions";
 import { useCipher } from "@/hooks/use-cipher";
 
 export function SiteAudit() {
@@ -45,6 +46,7 @@ export function SiteAudit() {
   const runDiscussion = useServerFn(getSpecialistDiscussion);
   const runTts = useServerFn(synthesizeSpeech);
   const runMonitor = useServerFn(checkSiteChanges);
+  const runAlert = useServerFn(sendAlertWebhook);
   const { addActivity, attachSources } = useCipher();
 
   const [monitoring, setMonitoring] = useState(false);
@@ -52,6 +54,65 @@ export function SiteAudit() {
   const [monitorBusy, setMonitorBusy] = useState(false);
   const monitorTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const MONITOR_INTERVAL_MS = 60_000;
+
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [lastAlert, setLastAlert] = useState<string | null>(null);
+  const alertedKeysRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("cipher.alertWebhookUrl");
+      if (v) setWebhookUrl(v);
+    } catch {}
+  }, []);
+
+  const persistWebhook = (v: string) => {
+    setWebhookUrl(v);
+    try {
+      if (v) localStorage.setItem("cipher.alertWebhookUrl", v);
+      else localStorage.removeItem("cipher.alertWebhookUrl");
+    } catch {}
+  };
+
+  const fireAlert = async (targetUrl: string, res: SiteMonitorResult) => {
+    const hook = webhookUrl.trim();
+    if (!hook) return;
+    const status = res.changeStatus;
+    if (!status || status === "same") return;
+    const key = `${targetUrl}|${status}|${res.previousScrapeAt ?? ""}|${res.checkedAt}`;
+    if (alertedKeysRef.current.has(key)) return;
+    alertedKeysRef.current.add(key);
+    addActivity({ tool: "alert.webhook", reason: `→ ${new URL(hook).hostname} (${status})` });
+    try {
+      const r = await runAlert({
+        data: {
+          webhookUrl: hook,
+          payload: {
+            source: "cipher.site-audit",
+            event: "site_change_detected",
+            url: targetUrl,
+            title: res.title ?? null,
+            changeStatus: status,
+            previousScrapeAt: res.previousScrapeAt ?? null,
+            checkedAt: res.checkedAt,
+          },
+        },
+      });
+      setLastAlert(
+        r.ok
+          ? `Alerted ${new URL(hook).hostname} · ${status} · ${new Date().toLocaleTimeString()}`
+          : `Alert failed (${r.status ?? "err"}): ${r.error ?? "non-2xx"}`,
+      );
+      addActivity({
+        tool: "alert.webhook",
+        reason: status,
+        result: r.ok ? `✓ ${r.status}` : `✗ ${r.error ?? r.status}`,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Alert failed";
+      setLastAlert(`Alert failed: ${msg}`);
+    }
+  };
 
   const performMonitorCheck = async (targetUrl: string) => {
     setMonitorBusy(true);
@@ -64,6 +125,7 @@ export function SiteAudit() {
         reason: targetUrl,
         result: res.error ? `✗ ${res.error}` : `✓ ${res.changeStatus ?? "checked"}`,
       });
+      if (!res.error) await fireAlert(targetUrl, res);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Monitor failed";
       addActivity({ tool: "firecrawl.monitor", reason: targetUrl, result: `✗ ${msg}` });
