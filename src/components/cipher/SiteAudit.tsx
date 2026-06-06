@@ -27,6 +27,8 @@ export function SiteAudit() {
     nhi: undefined,
   });
   const [audioLoading, setAudioLoading] = useState<"ciso" | "nhi" | null>(null);
+  const [playingOpinion, setPlayingOpinion] = useState<"ciso" | "nhi" | null>(null);
+  const opinionAudioRef = useRef<HTMLAudioElement | null>(null);
   type DiscussionTurn = { speaker: "ciso" | "nhi"; text: string; voiceId: string };
   type Discussion = {
     verdict: "safe" | "suspicious" | "malicious";
