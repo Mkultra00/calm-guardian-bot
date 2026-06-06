@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
-import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square, Download } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square, Download, Radar } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
 import { getSpecialistOpinion } from "@/lib/specialist-opinion.functions";
 import { getSpecialistDiscussion } from "@/lib/specialist-discussion.functions";
 import { synthesizeSpeech } from "@/lib/tts.functions";
+import { checkSiteChanges, type SiteMonitorResult } from "@/lib/site-monitor.functions";
 import { useCipher } from "@/hooks/use-cipher";
 
 export function SiteAudit() {
@@ -43,7 +44,58 @@ export function SiteAudit() {
   const runOpinion = useServerFn(getSpecialistOpinion);
   const runDiscussion = useServerFn(getSpecialistDiscussion);
   const runTts = useServerFn(synthesizeSpeech);
+  const runMonitor = useServerFn(checkSiteChanges);
   const { addActivity, attachSources } = useCipher();
+
+  const [monitoring, setMonitoring] = useState(false);
+  const [monitorChecks, setMonitorChecks] = useState<SiteMonitorResult[]>([]);
+  const [monitorBusy, setMonitorBusy] = useState(false);
+  const monitorTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const MONITOR_INTERVAL_MS = 60_000;
+
+  const performMonitorCheck = async (targetUrl: string) => {
+    setMonitorBusy(true);
+    addActivity({ tool: "firecrawl.monitor", reason: `Checking ${targetUrl}` });
+    try {
+      const res = await runMonitor({ data: { url: targetUrl } });
+      setMonitorChecks((p) => [res, ...p].slice(0, 10));
+      addActivity({
+        tool: "firecrawl.monitor",
+        reason: targetUrl,
+        result: res.error ? `✗ ${res.error}` : `✓ ${res.changeStatus ?? "checked"}`,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Monitor failed";
+      addActivity({ tool: "firecrawl.monitor", reason: targetUrl, result: `✗ ${msg}` });
+    } finally {
+      setMonitorBusy(false);
+    }
+  };
+
+  const startMonitoring = () => {
+    if (!result || result.error || monitoring) return;
+    const target = result.finalUrl ?? result.url;
+    setMonitoring(true);
+    setMonitorChecks([]);
+    performMonitorCheck(target);
+    monitorTimerRef.current = setInterval(() => {
+      performMonitorCheck(target);
+    }, MONITOR_INTERVAL_MS);
+  };
+
+  const stopMonitoring = () => {
+    if (monitorTimerRef.current) {
+      clearInterval(monitorTimerRef.current);
+      monitorTimerRef.current = null;
+    }
+    setMonitoring(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (monitorTimerRef.current) clearInterval(monitorTimerRef.current);
+    };
+  }, []);
 
   const submit = async () => {
     const u = url.trim();
