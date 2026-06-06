@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square, Download, Radar, Webhook, BellRing } from "lucide-react";
+import { Globe, Loader2, ShieldCheck, AlertTriangle, Info, ExternalLink, Brain, Bot, Volume2, ShieldAlert, ShieldQuestion, MessagesSquare, Play, Square, Download, Radar, Webhook, BellRing, Check, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { auditSite, type SiteAuditResult } from "@/lib/site-audit.functions";
 import { getSpecialistOpinion } from "@/lib/specialist-opinion.functions";
@@ -54,6 +54,52 @@ export function SiteAudit() {
   const [monitorBusy, setMonitorBusy] = useState(false);
   const monitorTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const MONITOR_INTERVAL_MS = 86_400_000; // 24 hours
+
+  type MonitoredSite = {
+    url: string;
+    addedAt: string;
+    lastCheckedAt?: string;
+    lastStatus?: SiteMonitorResult["changeStatus"] | "error" | "checking";
+    lastError?: string;
+    changeDetected: boolean;
+    changeCount: number;
+  };
+  const [monitoredSites, setMonitoredSites] = useState<MonitoredSite[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("cipher.monitoredSites");
+      if (raw) setMonitoredSites(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const persistSites = (next: MonitoredSite[]) => {
+    setMonitoredSites(next);
+    try { localStorage.setItem("cipher.monitoredSites", JSON.stringify(next)); } catch {}
+  };
+
+  const upsertSite = (url: string, patch: Partial<MonitoredSite>) => {
+    setMonitoredSites((prev) => {
+      const idx = prev.findIndex((s) => s.url === url);
+      let next: MonitoredSite[];
+      if (idx === -1) {
+        next = [{ url, addedAt: new Date().toISOString(), changeDetected: false, changeCount: 0, ...patch }, ...prev];
+      } else {
+        next = prev.slice();
+        next[idx] = { ...next[idx], ...patch };
+      }
+      try { localStorage.setItem("cipher.monitoredSites", JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const removeSite = (url: string) => {
+    persistSites(monitoredSites.filter((s) => s.url !== url));
+  };
+
+  const clearChangeFlag = (url: string) => {
+    upsertSite(url, { changeDetected: false, changeCount: 0 });
+  };
 
   const [webhookUrl, setWebhookUrl] = useState("");
   const [lastAlert, setLastAlert] = useState<string | null>(null);
@@ -117,6 +163,7 @@ export function SiteAudit() {
   const performMonitorCheck = async (targetUrl: string) => {
     setMonitorBusy(true);
     addActivity({ tool: "firecrawl.monitor", reason: `Checking ${targetUrl}` });
+    upsertSite(targetUrl, { lastStatus: "checking" });
     try {
       const res = await runMonitor({ data: { url: targetUrl } });
       setMonitorChecks((p) => [res, ...p].slice(0, 10));
@@ -125,10 +172,29 @@ export function SiteAudit() {
         reason: targetUrl,
         result: res.error ? `✗ ${res.error}` : `✓ ${res.changeStatus ?? "checked"}`,
       });
+      const status = res.changeStatus;
+      const isChange = !res.error && (status === "changed" || status === "new" || status === "removed");
+      setMonitoredSites((prev) => {
+        const idx = prev.findIndex((s) => s.url === targetUrl);
+        if (idx === -1) return prev;
+        const next = prev.slice();
+        const cur = next[idx];
+        next[idx] = {
+          ...cur,
+          lastCheckedAt: res.checkedAt,
+          lastStatus: res.error ? "error" : status,
+          lastError: res.error,
+          changeDetected: cur.changeDetected || isChange,
+          changeCount: cur.changeCount + (isChange ? 1 : 0),
+        };
+        try { localStorage.setItem("cipher.monitoredSites", JSON.stringify(next)); } catch {}
+        return next;
+      });
       if (!res.error) await fireAlert(targetUrl, res);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Monitor failed";
       addActivity({ tool: "firecrawl.monitor", reason: targetUrl, result: `✗ ${msg}` });
+      upsertSite(targetUrl, { lastStatus: "error", lastError: msg, lastCheckedAt: new Date().toISOString() });
     } finally {
       setMonitorBusy(false);
     }
@@ -139,6 +205,7 @@ export function SiteAudit() {
     const target = result.finalUrl ?? result.url;
     setMonitoring(true);
     setMonitorChecks([]);
+    upsertSite(target, {});
     performMonitorCheck(target);
     monitorTimerRef.current = setInterval(() => {
       performMonitorCheck(target);
